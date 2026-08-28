@@ -9,5 +9,10 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./data/cozy_bookmarks.db"
     secret_key: str = "dev-secret-change-me"
 
+    ai_timeout_seconds: float = 30.0
+    ai_local_base_url: str = "http://localhost:8000/v1"
+    ai_local_model: str = "default"
+    ai_local_api_key: str = ""
+
 
 settings = Settings()
