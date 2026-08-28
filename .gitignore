@@ -5,6 +5,7 @@ venv/
 *.db
 *.sqlite
 *.sqlite3
+/data/
 .env
 .env.*
 !.env.example
