@@ -5,9 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}cozy-bookmarks{% endblock %}</title>
   <link rel="stylesheet" href="/static/style.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/static/icons/icon-192.png">
+  <meta name="theme-color" content="#b5651d">
   <script src="/static/htmx.min.js" defer></script>
 </head>
 <body>
   {% block body %}{% endblock %}
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js");
+    }
+  </script>
 </body>
 </html>

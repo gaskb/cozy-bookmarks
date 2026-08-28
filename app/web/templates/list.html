@@ -6,6 +6,9 @@
   <form method="post" action="/logout"><button type="submit" class="link-button">Esci</button></form>
 </header>
 
+{% if shared %}<p class="flash flash-ok">Bookmark salvato.</p>{% endif %}
+{% if share_error == "no_url" %}<p class="flash flash-error">Nessun link trovato nel contenuto condiviso.</p>{% endif %}
+
 <nav class="tabs">
   <a href="/?status=da_organizzare" class="{{ 'active' if status == 'da_organizzare' else '' }}">Da organizzare</a>
   <a href="/?status=organizzato" class="{{ 'active' if status == 'organizzato' else '' }}">Organizzati</a>

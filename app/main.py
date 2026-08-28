@@ -12,6 +12,8 @@ from app.logging_config import configure_logging
 from app.web.auth import router as web_auth_router
 from app.web.bookmarks import router as web_bookmarks_router
 from app.web.deps import NotAuthenticatedRedirect
+from app.web.pwa import router as pwa_router
+from app.web.share_target import router as share_target_router
 
 configure_logging()
 
@@ -22,6 +24,8 @@ app.include_router(bookmarks_router)
 app.include_router(quick_save_router)
 app.include_router(web_auth_router)
 app.include_router(web_bookmarks_router)
+app.include_router(pwa_router)
+app.include_router(share_target_router)
 
 app.mount(
     "/static",

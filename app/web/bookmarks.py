@@ -28,6 +28,8 @@ def bookmark_list(
     request: Request,
     status: BookmarkStatus = BookmarkStatus.DA_ORGANIZZARE,
     tag: str | None = None,
+    shared: bool = False,
+    share_error: str | None = None,
     current_user: User = Depends(get_current_user_web),
     db: OrmSession = Depends(get_db),
 ) -> HTMLResponse:
@@ -41,6 +43,8 @@ def bookmark_list(
             "status": status.value,
             "all_tags": all_tags,
             "selected_tag": tag,
+            "shared": shared,
+            "share_error": share_error,
         },
     )
 

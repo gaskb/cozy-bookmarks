@@ -54,6 +54,23 @@ a {
   padding: 0;
 }
 
+.flash {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.3rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.flash-ok {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+}
+
+.flash-error {
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+  color: var(--danger);
+}
+
 .tabs,
 .tag-filter {
   display: flex;
@@ -110,7 +127,7 @@ a {
 .bookmark-title {
   font-weight: 600;
   text-decoration: none;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .description,
