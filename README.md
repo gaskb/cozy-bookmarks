@@ -14,9 +14,10 @@ MVP in sviluppo. Backlog e progressi sono tracciati nelle [issue GitLab](http://
 - **AI**: interfaccia provider astratta (chat-completion), due implementazioni intercambiabili via config:
   - LLM locale già in homelab (`ai.home.example.com`, Unsloth Studio, endpoint OpenAI-compatible) — default, nessun costo extra.
   - API Claude — opzionale, per qualità/affidabilità migliori quando serve.
-- **Auth**: nessuna in-app per l'MVP (single user). Protezione via Nginx Proxy Manager (Basic Auth, Access List "gas"), come altri servizi privati dell'homelab.
-- **Android**: web app manifest + service worker, Web Share Target API per comparire nel menu "Condividi" di sistema.
+- **Auth**: in-app fin dall'inizio (tabella `users`, login email+password, sessione via cookie) — anche se si parte con un solo account, per non dover riscrivere il modello dati quando si aggiungerà un secondo utente. Ogni bookmark ha un `user_id` obbligatorio fin dal primo schema. Nginx Proxy Manager fa solo da reverse proxy/TLS, nessuna Access List davanti al servizio.
+- **Android**: priorità alta, subito dopo le fondamenta — web app manifest + service worker, Web Share Target API per comparire nel menu "Condividi" di sistema. Motivazione: i link "al volo" (TikTok/Instagram e simili) vengono per lo più consumati e salvati da mobile, l'organizzazione avviene poi da PC.
 - **iOS/app nativa**: fuori scope per ora.
 - **Deploy**: Docker Compose su una VM dell'homelab (pattern: Vikunja/hyphen-check su VM 103 "web-server"), dietro Nginx Proxy Manager su un sottodominio `*.example.com`.
+- **Estrazione contenuto social (sperimentale, post-MVP)**: link citati in caption di post Instagram/TikTok, ed eventualmente trascrizione audio per link menzionati a voce nei video — vedi backlog, entrambe da validare tecnicamente prima di investirci sviluppo serio.
 
 Convenzioni di sviluppo (clean code, commit, backlog) seguite in questo progetto sono documentate nel workspace Notion personale, non duplicate qui.
