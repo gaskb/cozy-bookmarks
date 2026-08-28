@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Bookmark — cozy-bookmarks{% endblock %}
+{% block body %}
+<header class="app-header">
+  <h1>cozy-bookmarks</h1>
+  <form method="post" action="/logout"><button type="submit" class="link-button">Esci</button></form>
+</header>
+
+<nav class="tabs">
+  <a href="/?status=da_organizzare" class="{{ 'active' if status == 'da_organizzare' else '' }}">Da organizzare</a>
+  <a href="/?status=organizzato" class="{{ 'active' if status == 'organizzato' else '' }}">Organizzati</a>
+</nav>
+
+{% if all_tags %}
+<nav class="tag-filter">
+  <a href="/?status={{ status }}" class="{{ 'active' if not selected_tag else '' }}">Tutti i tag</a>
+  {% for t in all_tags %}
+  <a href="/?status={{ status }}&tag={{ t }}" class="{{ 'active' if t == selected_tag else '' }}">{{ t }}</a>
+  {% endfor %}
+</nav>
+{% endif %}
+
+<ul id="bookmark-list" class="bookmark-list">
+  {% for bookmark in bookmarks %}
+    {% include "_bookmark_row.html" %}
+  {% else %}
+  <li class="empty">Nessun bookmark qui.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

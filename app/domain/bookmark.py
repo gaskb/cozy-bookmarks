@@ -50,7 +50,7 @@ class Bookmark(Base):
     )
     created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
 
-    tags: Mapped[list[Tag]] = relationship(secondary=bookmark_tags)
+    tags: Mapped[list[Tag]] = relationship(secondary=bookmark_tags, order_by="Tag.name")
 
 
 def _get_or_create_tags(db: OrmSession, user_id: int, tag_names: list[str]) -> list[Tag]:
@@ -100,12 +100,22 @@ def get_bookmark(db: OrmSession, user_id: int, bookmark_id: int) -> Bookmark | N
 
 
 def list_bookmarks(
-    db: OrmSession, user_id: int, status: BookmarkStatus | None = None
+    db: OrmSession,
+    user_id: int,
+    status: BookmarkStatus | None = None,
+    tag: str | None = None,
 ) -> list[Bookmark]:
     query = db.query(Bookmark).filter(Bookmark.user_id == user_id)
     if status is not None:
         query = query.filter(Bookmark.status == status)
+    if tag is not None:
+        query = query.join(Bookmark.tags).filter(Tag.name == tag.strip().lower())
     return query.order_by(Bookmark.created_at.desc()).all()
+
+
+def list_tag_names(db: OrmSession, user_id: int) -> list[str]:
+    tags = db.query(Tag).filter(Tag.user_id == user_id).order_by(Tag.name).all()
+    return [tag.name for tag in tags]
 
 
 def update_bookmark(

@@ -1,0 +1,23 @@
+<li id="bookmark-{{ bookmark.id }}" class="bookmark-row">
+  {% if bookmark.favicon_url %}<img class="favicon" src="{{ bookmark.favicon_url }}" alt="">{% endif %}
+  <div class="bookmark-info">
+    <a class="bookmark-title" href="{{ bookmark.url }}" target="_blank" rel="noopener">{{ bookmark.title or bookmark.url }}</a>
+    {% if bookmark.description %}<p class="description">{{ bookmark.description }}</p>{% endif %}
+    {% if bookmark.note %}<p class="note">{{ bookmark.note }}</p>{% endif %}
+    {% if bookmark.tags %}
+    <div class="tags">
+      {% for tag in bookmark.tags %}<span class="tag">{{ tag.name }}</span>{% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  <div class="actions">
+    <a href="/bookmarks/{{ bookmark.id }}/organize">Organizza</a>
+    <button
+      hx-delete="/bookmarks/{{ bookmark.id }}/delete"
+      hx-target="#bookmark-{{ bookmark.id }}"
+      hx-swap="outerHTML"
+      hx-confirm="Eliminare questo bookmark?"
+      class="danger"
+    >Elimina</button>
+  </div>
+</li>

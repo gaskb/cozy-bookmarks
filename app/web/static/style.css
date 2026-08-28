@@ -1,0 +1,235 @@
+:root {
+  color-scheme: light dark;
+  --bg: #faf7f2;
+  --fg: #2b2620;
+  --muted: #7a7266;
+  --accent: #b5651d;
+  --border: #e4ddd0;
+  --danger: #a4342a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1a17;
+    --fg: #ece6da;
+    --muted: #a89e8c;
+    --accent: #e0a45c;
+    --border: #3a352c;
+    --danger: #e08078;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 1rem;
+  max-width: 42rem;
+  margin-inline: auto;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.4;
+}
+
+a {
+  color: var(--accent);
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+}
+
+.tabs,
+.tag-filter {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.tabs a,
+.tag-filter a {
+  text-decoration: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.tabs a.active,
+.tag-filter a.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.bookmark-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bookmark-row {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+.bookmark-row .favicon {
+  width: 20px;
+  height: 20px;
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.bookmark-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.bookmark-title {
+  font-weight: 600;
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.description,
+.note {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0.25rem 0;
+}
+
+.tags {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.tag {
+  font-size: 0.75rem;
+  background: var(--border);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  color: var(--fg);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.actions a {
+  font-size: 0.85rem;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+button.danger,
+.delete-form button {
+  background: none;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: 0.3rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+.empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.login {
+  max-width: 20rem;
+  margin: 4rem auto;
+}
+
+.login form,
+.organize-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.login label,
+.organize-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+input,
+textarea {
+  font: inherit;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.3rem;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.login button[type="submit"],
+.organize-form button[type="submit"] {
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 0.3rem;
+  padding: 0.6rem;
+}
+
+.error {
+  color: var(--danger);
+}
+
+.organize-preview {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.preview-image {
+  max-width: 100%;
+  border-radius: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.remaining {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.delete-form {
+  margin-top: 0.5rem;
+}
