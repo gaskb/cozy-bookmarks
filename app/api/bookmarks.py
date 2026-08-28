@@ -7,6 +7,7 @@ from app.db import get_db
 from app.domain import bookmark as bookmark_domain
 from app.domain.bookmark import BookmarkStatus
 from app.domain.user import User
+from app.orchestration.save_bookmark import save_bookmark_with_metadata
 
 router = APIRouter(prefix="/bookmarks", tags=["bookmarks"])
 
@@ -17,7 +18,7 @@ def create_bookmark(
     current_user: User = Depends(get_current_user),
     db: OrmSession = Depends(get_db),
 ) -> BookmarkOut:
-    bookmark = bookmark_domain.create_bookmark(
+    bookmark = save_bookmark_with_metadata(
         db,
         user_id=current_user.id,
         url=payload.url,

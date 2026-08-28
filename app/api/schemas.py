@@ -38,6 +38,9 @@ class BookmarkOut(BaseModel):
     url: str
     title: str | None
     note: str | None
+    description: str | None
+    image_url: str | None
+    favicon_url: str | None
     status: BookmarkStatus
     created_at: dt.datetime
     tags: list[str]
@@ -49,6 +52,9 @@ class BookmarkOut(BaseModel):
             url=bookmark.url,
             title=bookmark.title,
             note=bookmark.note,
+            description=bookmark.description,
+            image_url=bookmark.image_url,
+            favicon_url=bookmark.favicon_url,
             status=bookmark.status,
             created_at=bookmark.created_at,
             tags=sorted(tag.name for tag in bookmark.tags),

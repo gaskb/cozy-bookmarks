@@ -40,6 +40,9 @@ class Bookmark(Base):
     url: Mapped[str] = mapped_column(String(2048), nullable=False)
     title: Mapped[str | None] = mapped_column(String(500))
     note: Mapped[str | None] = mapped_column(Text)
+    description: Mapped[str | None] = mapped_column(Text)
+    image_url: Mapped[str | None] = mapped_column(String(2048))
+    favicon_url: Mapped[str | None] = mapped_column(String(2048))
     status: Mapped[BookmarkStatus] = mapped_column(
         Enum(BookmarkStatus, values_callable=lambda enum_cls: [member.value for member in enum_cls]),
         nullable=False,
@@ -67,6 +70,9 @@ def create_bookmark(
     url: str,
     title: str | None = None,
     note: str | None = None,
+    description: str | None = None,
+    image_url: str | None = None,
+    favicon_url: str | None = None,
     tag_names: list[str] | None = None,
 ) -> Bookmark:
     bookmark = Bookmark(
@@ -74,6 +80,9 @@ def create_bookmark(
         url=url,
         title=title,
         note=note,
+        description=description,
+        image_url=image_url,
+        favicon_url=favicon_url,
         tags=_get_or_create_tags(db, user_id, tag_names or []),
     )
     db.add(bookmark)

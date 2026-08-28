@@ -7,7 +7,15 @@ from sqlalchemy.pool import StaticPool
 import app.domain  # noqa: F401 registers all models on Base.metadata
 from app.db import Base, get_db
 from app.domain.user import User, hash_password
+from app.integrations.metadata_extractor import PageMetadata
 from app.main import app as fastapi_app
+from app.orchestration import save_bookmark
+
+
+@pytest.fixture(autouse=True)
+def _no_real_network_metadata_fetch(monkeypatch):
+    # keeps tests hermetic; individual tests override this via their own monkeypatch
+    monkeypatch.setattr(save_bookmark, "fetch_metadata", lambda url: PageMetadata())
 
 
 @pytest.fixture()

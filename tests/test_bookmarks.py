@@ -1,4 +1,6 @@
 from app.domain.user import User, hash_password
+from app.integrations.metadata_extractor import PageMetadata
+from app.orchestration import save_bookmark
 
 
 def _create_second_user(db_session) -> User:
@@ -69,6 +71,21 @@ def test_delete_bookmark(authed_client):
 
     get_response = authed_client.get(f"/bookmarks/{created['id']}")
     assert get_response.status_code == 404
+
+
+def test_create_bookmark_populates_metadata_via_api(authed_client, monkeypatch):
+    monkeypatch.setattr(
+        save_bookmark,
+        "fetch_metadata",
+        lambda url: PageMetadata(title="From the page", description="Nice read"),
+    )
+
+    response = authed_client.post("/bookmarks", json={"url": "https://example.com"})
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["title"] == "From the page"
+    assert body["description"] == "Nice read"
 
 
 def test_bookmarks_are_isolated_per_user(client, db_session, user):
