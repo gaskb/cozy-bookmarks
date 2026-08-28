@@ -24,6 +24,11 @@ class BookmarkCreate(BaseModel):
     tags: list[str] = []
 
 
+class QuickSaveOut(BaseModel):
+    status: str
+    bookmark_id: int
+
+
 class BookmarkUpdate(BaseModel):
     title: str | None = None
     note: str | None = None
