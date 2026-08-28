@@ -67,8 +67,17 @@ def organize_form(
         return RedirectResponse("/", status_code=303)
 
     remaining_count = bookmark_domain.count_to_organize(db, current_user.id)
+    is_suggestion = not bookmark.tags and bool(bookmark.ai_suggested_tags)
+    tags_value = ", ".join(tag.name for tag in bookmark.tags) or (bookmark.ai_suggested_tags or "")
     return templates.TemplateResponse(
-        request, "organize.html", {"bookmark": bookmark, "remaining_count": remaining_count}
+        request,
+        "organize.html",
+        {
+            "bookmark": bookmark,
+            "remaining_count": remaining_count,
+            "tags_value": tags_value,
+            "is_suggestion": is_suggestion,
+        },
     )
 
 

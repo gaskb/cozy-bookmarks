@@ -1,3 +1,6 @@
+from app.orchestration import save_bookmark
+
+
 def _create_bookmark(api_client, url, **kwargs):
     payload = {"url": url, **kwargs}
     return api_client.post("/bookmarks", json=payload).json()
@@ -64,6 +67,35 @@ def test_organize_form_renders_bookmark_fields(authed_client):
     assert 'value="Hello"' in response.text
     assert 'value="idea, python"' in response.text
     assert "Tag object at" not in response.text
+
+
+def test_organize_form_prefills_ai_suggestion_when_no_real_tags(authed_client, monkeypatch):
+    monkeypatch.setattr(
+        save_bookmark, "suggest_tags_safely", lambda *args, **kwargs: ["python", "homelab"]
+    )
+    created = _create_bookmark(authed_client, "https://example.com")
+
+    response = authed_client.get(f"/bookmarks/{created['id']}/organize")
+
+    assert 'value="python, homelab"' in response.text
+    assert "suggerimento AI" in response.text
+
+
+def test_organize_form_does_not_apply_ai_suggestion_as_real_tags(authed_client, monkeypatch):
+    monkeypatch.setattr(save_bookmark, "suggest_tags_safely", lambda *args, **kwargs: ["python"])
+    created = _create_bookmark(authed_client, "https://example.com")
+
+    saved = authed_client.get(f"/bookmarks/{created['id']}").json()
+
+    assert saved["tags"] == []
+
+
+def test_organize_form_hides_ai_hint_when_real_tags_already_exist(authed_client):
+    created = _create_bookmark(authed_client, "https://example.com", tags=["manual"])
+
+    response = authed_client.get(f"/bookmarks/{created['id']}/organize")
+
+    assert "suggerimento AI" not in response.text
 
 
 def test_organize_form_redirects_when_bookmark_missing(authed_client):

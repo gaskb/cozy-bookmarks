@@ -18,5 +18,7 @@ class Settings(BaseSettings):
     ai_claude_api_key: str = ""
     ai_claude_model: str = "claude-opus-5"
 
+    ai_tagging_enabled: bool = True
+
 
 settings = Settings()

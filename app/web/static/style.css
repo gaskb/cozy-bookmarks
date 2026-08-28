@@ -199,6 +199,11 @@ textarea {
   color: var(--fg);
 }
 
+.ai-hint {
+  color: var(--accent);
+  font-size: 0.8rem;
+}
+
 .login button[type="submit"],
 .organize-form button[type="submit"] {
   background: var(--accent);

@@ -18,6 +18,12 @@ def _no_real_network_metadata_fetch(monkeypatch):
     monkeypatch.setattr(save_bookmark, "fetch_metadata", lambda url: PageMetadata())
 
 
+@pytest.fixture(autouse=True)
+def _no_real_network_ai_suggestion(monkeypatch):
+    # keeps tests hermetic; individual tests override this via their own monkeypatch
+    monkeypatch.setattr(save_bookmark, "suggest_tags_safely", lambda *args, **kwargs: [])
+
+
 @pytest.fixture()
 def db_session():
     engine = create_engine(
