@@ -14,5 +14,9 @@ class Settings(BaseSettings):
     ai_local_model: str = "default"
     ai_local_api_key: str = ""
 
+    ai_provider: str = "local"
+    ai_claude_api_key: str = ""
+    ai_claude_model: str = "claude-opus-5"
+
 
 settings = Settings()
