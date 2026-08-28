@@ -1,1 +1,1 @@
-from app.domain import session, user  # noqa: F401
+from app.domain import bookmark, session, user  # noqa: F401
