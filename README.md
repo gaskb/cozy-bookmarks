@@ -11,9 +11,9 @@ MVP in sviluppo. Backlog e progressi sono tracciati nelle [issue GitLab](http://
 - **Backend**: Python + FastAPI, monolite singolo (niente microservizi, non serve alla scala di un solo utente).
 - **Frontend**: server-rendered (Jinja2 + HTMX), niente SPA/build step JS — velocità di sviluppo e nessuna curva di apprendimento su un framework frontend non necessario per un'app essenzialmente CRUD.
 - **Storage**: SQLite — zero DB server da gestire, backup = copiare un file.
-- **AI**: interfaccia provider astratta (chat-completion), due implementazioni intercambiabili via config:
-  - LLM locale già in homelab (`ai.home.example.com`, Unsloth Studio, endpoint OpenAI-compatible) — default, nessun costo extra.
-  - API Claude — opzionale, per qualità/affidabilità migliori quando serve.
+- **AI**: interfaccia provider astratta (chat-completion), due implementazioni:
+  - `OpenAICompatibleProvider` — qualunque servizio con endpoint `/chat/completions` in stile OpenAI: il LLM locale già in homelab (Unsloth Studio, default), ma anche Qwen (DashScope compatible-mode o self-hosted), OpenAI/ChatGPT stesso, o altri — cambiare provider è pura config (`AI_OPENAI_COMPATIBLE_BASE_URL`/`_MODEL`/`_API_KEY`), zero codice nuovo.
+  - `ClaudeProvider` — unico adapter dedicato, perché l'API Messages di Anthropic ha una forma diversa (system prompt separato, shape della risposta diversa). Attivabile con `AI_PROVIDER=claude`.
 - **Auth**: in-app fin dall'inizio (tabella `users`, login email+password, sessione via cookie) — anche se si parte con un solo account, per non dover riscrivere il modello dati quando si aggiungerà un secondo utente. Ogni bookmark ha un `user_id` obbligatorio fin dal primo schema. Nginx Proxy Manager fa solo da reverse proxy/TLS, nessuna Access List davanti al servizio.
 - **Android**: priorità alta, subito dopo le fondamenta — web app manifest + service worker, Web Share Target API per comparire nel menu "Condividi" di sistema. Motivazione: i link "al volo" (TikTok/Instagram e simili) vengono per lo più consumati e salvati da mobile, l'organizzazione avviene poi da PC.
 - **iOS/app nativa**: fuori scope per ora.

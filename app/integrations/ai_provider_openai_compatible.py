@@ -5,7 +5,8 @@ import httpx
 from app.integrations.ai_provider import AIProvider, AIProviderError, ChatMessage
 
 
-class LocalLLMProvider(AIProvider):
+class OpenAICompatibleProvider(AIProvider):
+    # works for any /chat/completions-shaped service (self-hosted LLM, Qwen, OpenAI) via config alone
     def __init__(
         self,
         base_url: str,
@@ -39,9 +40,9 @@ class LocalLLMProvider(AIProvider):
             response.raise_for_status()
             data = response.json()
         except httpx.HTTPError as exc:
-            raise AIProviderError(f"local LLM request failed: {exc}") from exc
+            raise AIProviderError(f"OpenAI-compatible request failed: {exc}") from exc
         except ValueError as exc:
-            raise AIProviderError(f"local LLM returned invalid JSON: {exc}") from exc
+            raise AIProviderError(f"OpenAI-compatible response was not valid JSON: {exc}") from exc
         finally:
             if owns_client:
                 http_client.close()
@@ -49,4 +50,4 @@ class LocalLLMProvider(AIProvider):
         try:
             return data["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError) as exc:
-            raise AIProviderError(f"local LLM returned unexpected response shape: {exc}") from exc
+            raise AIProviderError(f"OpenAI-compatible response had an unexpected shape: {exc}") from exc

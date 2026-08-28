@@ -4,12 +4,12 @@ import httpx
 import pytest
 
 from app.integrations.ai_provider import AIProviderError, ChatMessage
-from app.integrations.ai_provider_local import LocalLLMProvider
+from app.integrations.ai_provider_openai_compatible import OpenAICompatibleProvider
 
 
-def _provider_for(handler, api_key: str = "") -> LocalLLMProvider:
+def _provider_for(handler, api_key: str = "") -> OpenAICompatibleProvider:
     client = httpx.Client(transport=httpx.MockTransport(handler))
-    return LocalLLMProvider(
+    return OpenAICompatibleProvider(
         base_url="http://ai.local/v1", model="test-model", api_key=api_key, client=client
     )
 
