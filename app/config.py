@@ -7,7 +7,6 @@ class Settings(BaseSettings):
     env: str = "development"
     log_level: str = "INFO"
     database_url: str = "sqlite:///./data/cozy_bookmarks.db"
-    secret_key: str = "dev-secret-change-me"
 
     ai_timeout_seconds: float = 30.0
 
