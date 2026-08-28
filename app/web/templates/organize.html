@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Organizza — cozy-bookmarks{% endblock %}
+{% block body %}
+<header class="app-header">
+  <h1>Organizza</h1>
+  <a href="/">Torna alla lista</a>
+</header>
+
+<p class="remaining">{{ remaining_count }} bookmark ancora da organizzare.</p>
+
+<div class="organize-preview">
+  {% if bookmark.image_url %}<img class="preview-image" src="{{ bookmark.image_url }}" alt="">{% endif %}
+  <a href="{{ bookmark.url }}" target="_blank" rel="noopener">{{ bookmark.url }}</a>
+  {% if bookmark.description %}<p class="description">{{ bookmark.description }}</p>{% endif %}
+</div>
+
+<form method="post" action="/bookmarks/{{ bookmark.id }}/organize" class="organize-form">
+  <label>Titolo
+    <input type="text" name="title" value="{{ bookmark.title or '' }}">
+  </label>
+  <label>Note
+    <textarea name="note" rows="3">{{ bookmark.note or '' }}</textarea>
+  </label>
+  <label>Tag (separati da virgola)
+    <input type="text" name="tags" value="{{ bookmark.tags | join(', ', attribute='name') }}">
+  </label>
+  <button type="submit">Salva e prossimo</button>
+</form>
+
+<form
+  method="post"
+  action="/bookmarks/{{ bookmark.id }}/organize/delete"
+  class="delete-form"
+  onsubmit="return confirm('Eliminare questo bookmark?')"
+>
+  <button type="submit" class="danger">Elimina</button>
+</form>
+{% endblock %}

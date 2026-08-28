@@ -118,6 +118,25 @@ def list_tag_names(db: OrmSession, user_id: int) -> list[str]:
     return [tag.name for tag in tags]
 
 
+def count_to_organize(db: OrmSession, user_id: int) -> int:
+    return (
+        db.query(Bookmark)
+        .filter(Bookmark.user_id == user_id, Bookmark.status == BookmarkStatus.DA_ORGANIZZARE)
+        .count()
+    )
+
+
+def get_next_to_organize(
+    db: OrmSession, user_id: int, exclude_id: int | None = None
+) -> Bookmark | None:
+    query = db.query(Bookmark).filter(
+        Bookmark.user_id == user_id, Bookmark.status == BookmarkStatus.DA_ORGANIZZARE
+    )
+    if exclude_id is not None:
+        query = query.filter(Bookmark.id != exclude_id)
+    return query.order_by(Bookmark.created_at.asc()).first()
+
+
 def update_bookmark(
     db: OrmSession,
     user_id: int,

@@ -51,3 +51,76 @@ def test_delete_row_via_htmx_removes_bookmark(authed_client):
 
     get_response = authed_client.get(f"/bookmarks/{created['id']}")
     assert get_response.status_code == 404
+
+
+def test_organize_form_renders_bookmark_fields(authed_client):
+    created = _create_bookmark(
+        authed_client, "https://example.com", title="Hello", tags=["idea", "python"]
+    )
+
+    response = authed_client.get(f"/bookmarks/{created['id']}/organize")
+
+    assert response.status_code == 200
+    assert 'value="Hello"' in response.text
+    assert 'value="idea, python"' in response.text
+    assert "Tag object at" not in response.text
+
+
+def test_organize_form_redirects_when_bookmark_missing(authed_client):
+    response = authed_client.get("/bookmarks/999/organize", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/"
+
+
+def test_organize_submit_updates_and_marks_organized(authed_client):
+    created = _create_bookmark(authed_client, "https://example.com")
+
+    response = authed_client.post(
+        f"/bookmarks/{created['id']}/organize",
+        data={"title": "New title", "note": "context", "tags": "idea, later"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/?status=organizzato"
+
+    updated = authed_client.get(f"/bookmarks/{created['id']}").json()
+    assert updated["title"] == "New title"
+    assert updated["note"] == "context"
+    assert updated["status"] == "organizzato"
+    assert set(updated["tags"]) == {"idea", "later"}
+
+
+def test_organize_submit_advances_to_next_bookmark(authed_client):
+    first = _create_bookmark(authed_client, "https://first.example.com")
+    second = _create_bookmark(authed_client, "https://second.example.com")
+
+    response = authed_client.post(
+        f"/bookmarks/{first['id']}/organize",
+        data={"title": "", "note": "", "tags": ""},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == f"/bookmarks/{second['id']}/organize"
+
+
+def test_organize_delete_advances_to_next_bookmark(authed_client):
+    first = _create_bookmark(authed_client, "https://first.example.com")
+    second = _create_bookmark(authed_client, "https://second.example.com")
+
+    response = authed_client.post(f"/bookmarks/{first['id']}/organize/delete", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert response.headers["location"] == f"/bookmarks/{second['id']}/organize"
+
+    get_response = authed_client.get(f"/bookmarks/{first['id']}")
+    assert get_response.status_code == 404
+
+
+def test_bookmark_organize_page_requires_auth(client):
+    response = client.get("/bookmarks/1/organize", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/login"
