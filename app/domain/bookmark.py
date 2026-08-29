@@ -3,12 +3,14 @@ from __future__ import annotations
 import datetime as dt
 import enum
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, Table, Text, or_
+from sqlalchemy import Boolean, Column, DateTime, Enum, Float, ForeignKey, String, Table, Text, or_
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.orm import Session as OrmSession
 
 from app.db import Base
 from app.time_utils import utcnow
+
+POSITION_GAP = 1000.0
 
 
 class BookmarkStatus(str, enum.Enum):
@@ -51,6 +53,7 @@ class Bookmark(Base):
         default=BookmarkStatus.DA_ORGANIZZARE,
     )
     created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
+    position: Mapped[float] = mapped_column(Float, nullable=False)
 
     tags: Mapped[list[Tag]] = relationship(secondary=bookmark_tags, order_by="Tag.name")
 
@@ -64,6 +67,16 @@ def _get_or_create_tags(db: OrmSession, user_id: int, tag_names: list[str]) -> l
             db.add(tag)
         tags.append(tag)
     return tags
+
+
+def _next_position(db: OrmSession, user_id: int) -> float:
+    highest = (
+        db.query(Bookmark.position)
+        .filter(Bookmark.user_id == user_id)
+        .order_by(Bookmark.position.desc())
+        .first()
+    )
+    return (highest[0] + POSITION_GAP) if highest else POSITION_GAP
 
 
 def create_bookmark(
@@ -88,6 +101,7 @@ def create_bookmark(
         favicon_url=favicon_url,
         ai_suggested_tags=", ".join(ai_suggested_tags) if ai_suggested_tags else None,
         tags=_get_or_create_tags(db, user_id, tag_names or []),
+        position=_next_position(db, user_id),
     )
     db.add(bookmark)
     db.commit()
@@ -129,7 +143,7 @@ def list_bookmarks(
                 Bookmark.tags.any(Tag.name.ilike(pattern)),
             )
         )
-    return query.order_by(Bookmark.created_at.desc()).all()
+    return query.order_by(Bookmark.position.desc()).all()
 
 
 def list_tag_names(db: OrmSession, user_id: int, pinned: bool | None = None) -> list[str]:
@@ -198,6 +212,33 @@ def update_bookmark(
     db.commit()
     db.refresh(bookmark)
     return bookmark
+
+
+def reorder_bookmark(
+    db: OrmSession,
+    user_id: int,
+    bookmark_id: int,
+    above_id: int | None,
+    below_id: int | None,
+) -> None:
+    bookmark = get_bookmark(db, user_id, bookmark_id)
+    if bookmark is None:
+        return
+
+    above = get_bookmark(db, user_id, above_id) if above_id is not None else None
+    below = get_bookmark(db, user_id, below_id) if below_id is not None else None
+
+    if above is not None and below is not None:
+        new_position = (above.position + below.position) / 2
+    elif below is not None:
+        new_position = below.position + POSITION_GAP
+    elif above is not None:
+        new_position = above.position - POSITION_GAP
+    else:
+        new_position = POSITION_GAP
+
+    bookmark.position = new_position
+    db.commit()
 
 
 def delete_bookmark(db: OrmSession, user_id: int, bookmark_id: int) -> bool:

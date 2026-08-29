@@ -19,6 +19,7 @@
   <link rel="icon" href="/static/icons/icon-192.png">
   <meta name="theme-color" content="#b5651d">
   <script src="/static/htmx.min.js" defer></script>
+  <script src="/static/sortable.min.js" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -82,6 +83,31 @@
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js");
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      var bookmarkList = document.getElementById("bookmark-list");
+      if (!bookmarkList || typeof Sortable === "undefined") {
+        return;
+      }
+      Sortable.create(bookmarkList, {
+        handle: ".drag-handle",
+        animation: 150,
+        delay: 250,
+        delayOnTouchOnly: true,
+        onEnd: function (evt) {
+          var id = evt.item.id.replace("bookmark-", "");
+          var above = evt.item.previousElementSibling;
+          var below = evt.item.nextElementSibling;
+          var aboveId = above ? above.id.replace("bookmark-", "") : "";
+          var belowId = below ? below.id.replace("bookmark-", "") : "";
+          fetch("/bookmarks/" + id + "/reorder", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: "above_id=" + encodeURIComponent(aboveId) + "&below_id=" + encodeURIComponent(belowId),
+          });
+        },
+      });
+    });
   </script>
 </body>
 </html>

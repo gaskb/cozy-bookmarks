@@ -372,11 +372,35 @@ a {
   cursor: pointer;
 }
 
+.bookmark-leading {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
 .bookmark-row .favicon {
   width: 20px;
   height: 20px;
   margin-top: 0.2rem;
-  flex-shrink: 0;
+}
+
+.drag-handle {
+  display: flex;
+  color: var(--md-on-surface-variant);
+  cursor: grab;
+  touch-action: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.sortable-ghost {
+  opacity: 0.4;
 }
 
 .bookmark-info {

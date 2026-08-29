@@ -1,6 +1,15 @@
 <li id="bookmark-{{ bookmark.id }}" class="bookmark-row">
   <a class="card-stretched-link" href="/bookmarks/{{ bookmark.id }}/organize" aria-label="Organizza {{ bookmark.title or bookmark.url }}"></a>
-  {% if bookmark.favicon_url %}<img class="favicon" src="{{ bookmark.favicon_url }}" alt="">{% endif %}
+  <div class="bookmark-leading">
+    {% if bookmark.favicon_url %}<img class="favicon" src="{{ bookmark.favicon_url }}" alt="">{% endif %}
+    <span class="drag-handle" aria-label="Trascina per riordinare" title="Trascina per riordinare">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+        <circle cx="8" cy="6" r="1.6"/><circle cx="16" cy="6" r="1.6"/>
+        <circle cx="8" cy="12" r="1.6"/><circle cx="16" cy="12" r="1.6"/>
+        <circle cx="8" cy="18" r="1.6"/><circle cx="16" cy="18" r="1.6"/>
+      </svg>
+    </span>
+  </div>
   <div class="bookmark-info">
     <a class="bookmark-title" href="{{ bookmark.url }}" target="_blank" rel="noopener">{{ bookmark.title or bookmark.url }}</a>
     {% if bookmark.description %}<p class="description">{{ bookmark.description }}</p>{% endif %}

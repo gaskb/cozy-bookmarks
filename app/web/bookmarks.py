@@ -162,6 +162,24 @@ def delete_bookmark_row(
     return PlainTextResponse("")
 
 
+@router.post("/bookmarks/{bookmark_id}/reorder")
+def reorder_bookmark_route(
+    bookmark_id: int,
+    above_id: str = Form(""),
+    below_id: str = Form(""),
+    current_user: User = Depends(get_current_user_web),
+    db: OrmSession = Depends(get_db),
+) -> PlainTextResponse:
+    bookmark_domain.reorder_bookmark(
+        db,
+        current_user.id,
+        bookmark_id,
+        above_id=int(above_id) if above_id else None,
+        below_id=int(below_id) if below_id else None,
+    )
+    return PlainTextResponse("")
+
+
 @router.get("/bookmarks/{bookmark_id}/organize", response_class=HTMLResponse)
 def organize_form(
     request: Request,
