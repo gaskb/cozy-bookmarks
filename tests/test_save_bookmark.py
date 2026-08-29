@@ -93,3 +93,45 @@ def test_save_bookmark_skips_ai_suggestion_when_feature_flag_disabled(
 
     assert called == []
     assert bookmark.ai_suggested_tags is None
+
+
+def test_save_bookmark_enriches_tiktok_caption_into_description_and_note(
+    db_session, user, monkeypatch
+):
+    monkeypatch.setattr(
+        save_bookmark,
+        "fetch_metadata",
+        lambda url: PageMetadata(title="A TikTok", description="Log in to TikTok"),
+    )
+    monkeypatch.setattr(
+        save_bookmark,
+        "enrich_tiktok_metadata_safely",
+        lambda url, metadata: (
+            PageMetadata(title=metadata.title, description="La vera didascalia con un link"),
+            "Link citato nella caption: https://example.com/vero-link",
+        ),
+    )
+
+    bookmark = save_bookmark_with_metadata(
+        db_session, user_id=user.id, url="https://www.tiktok.com/@x/video/1"
+    )
+
+    assert bookmark.description == "La vera didascalia con un link"
+    assert bookmark.note == "Link citato nella caption: https://example.com/vero-link"
+
+
+def test_save_bookmark_appends_tiktok_note_to_user_supplied_note(db_session, user, monkeypatch):
+    monkeypatch.setattr(
+        save_bookmark,
+        "enrich_tiktok_metadata_safely",
+        lambda url, metadata: (metadata, "Link citato nella caption: https://example.com/x"),
+    )
+
+    bookmark = save_bookmark_with_metadata(
+        db_session,
+        user_id=user.id,
+        url="https://www.tiktok.com/@x/video/1",
+        note="mia nota personale",
+    )
+
+    assert bookmark.note == "mia nota personale\nLink citato nella caption: https://example.com/x"

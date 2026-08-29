@@ -24,6 +24,14 @@ def _no_real_network_ai_suggestion(monkeypatch):
     monkeypatch.setattr(save_bookmark, "suggest_tags_safely", lambda *args, **kwargs: [])
 
 
+@pytest.fixture(autouse=True)
+def _no_real_network_tiktok_enrichment(monkeypatch):
+    # keeps tests hermetic; individual tests override this via their own monkeypatch
+    monkeypatch.setattr(
+        save_bookmark, "enrich_tiktok_metadata_safely", lambda url, metadata: (metadata, None)
+    )
+
+
 @pytest.fixture()
 def db_session():
     engine = create_engine(
