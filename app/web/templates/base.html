@@ -4,6 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}cozy-bookmarks{% endblock %}</title>
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("theme");
+        if (stored && stored !== "system") {
+          document.documentElement.dataset.theme = stored;
+        }
+      } catch (e) {}
+    })();
+  </script>
   <link rel="stylesheet" href="/static/style.css">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/static/icons/icon-192.png">
@@ -11,8 +21,45 @@
   <script src="/static/htmx.min.js" defer></script>
 </head>
 <body>
+  <div class="theme-switcher">
+    <label for="theme-select" class="visually-hidden">Tema</label>
+    <select id="theme-select"></select>
+  </div>
   {% block body %}{% endblock %}
   <script>
+    (function () {
+      var THEMES = [
+        { value: "system", label: "Sistema" },
+        { value: "light", label: "Chiaro" },
+        { value: "dark", label: "Scuro" }
+      ];
+      var select = document.getElementById("theme-select");
+      THEMES.forEach(function (theme) {
+        var option = document.createElement("option");
+        option.value = theme.value;
+        option.textContent = theme.label;
+        select.appendChild(option);
+      });
+
+      var current = "system";
+      try {
+        current = localStorage.getItem("theme") || "system";
+      } catch (e) {}
+      select.value = current;
+
+      select.addEventListener("change", function () {
+        var value = select.value;
+        try {
+          localStorage.setItem("theme", value);
+        } catch (e) {}
+        if (value === "system") {
+          delete document.documentElement.dataset.theme;
+        } else {
+          document.documentElement.dataset.theme = value;
+        }
+      });
+    })();
+
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js");
     }

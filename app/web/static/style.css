@@ -9,7 +9,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #1c1a17;
     --fg: #ece6da;
     --muted: #a89e8c;
@@ -19,8 +19,45 @@
   }
 }
 
+:root[data-theme="dark"] {
+  --bg: #1c1a17;
+  --fg: #ece6da;
+  --muted: #a89e8c;
+  --accent: #e0a45c;
+  --border: #3a352c;
+  --danger: #e08078;
+}
+
 * {
   box-sizing: border-box;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.theme-switcher {
+  position: fixed;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 10;
+}
+
+.theme-switcher select {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.3rem;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
 }
 
 body {
