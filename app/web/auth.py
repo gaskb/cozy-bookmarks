@@ -14,7 +14,7 @@ router = APIRouter()
 
 @router.get("/login", response_class=HTMLResponse)
 def login_form(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(request, "login.html", {})
+    return templates.TemplateResponse(request, "login.html", {"current_user": None})
 
 
 @router.post("/login")
@@ -27,7 +27,10 @@ def login_submit(
     user = db.query(User).filter(User.email == email).first()
     if user is None or not verify_password(password, user.password_hash):
         return templates.TemplateResponse(
-            request, "login.html", {"error": "Email o password non corretti"}, status_code=401
+            request,
+            "login.html",
+            {"error": "Email o password non corretti", "current_user": None},
+            status_code=401,
         )
 
     session = create_session(db, user.id)

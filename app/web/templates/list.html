@@ -1,14 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Bookmark — cozy-bookmarks{% endblock %}
 {% block body %}
-<header class="app-header">
-  <h1>cozy-bookmarks</h1>
-  <div class="header-actions">
-    <a href="/bookmarks/import" class="link-button">Importa</a>
-    <form method="post" action="/logout"><button type="submit" class="link-button">Esci</button></form>
-  </div>
-</header>
-
 {% if shared %}<p class="flash flash-ok">Bookmark salvato.</p>{% endif %}
 {% if share_error == "no_url" %}<p class="flash flash-error">Nessun link trovato nel contenuto condiviso.</p>{% endif %}
 {% if imported is not none %}<p class="flash flash-ok">Importati {{ imported }} bookmark{% if skipped %}, {{ skipped }} già presenti saltati{% endif %}.</p>{% endif %}

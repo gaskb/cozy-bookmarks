@@ -55,6 +55,7 @@ def bookmark_list(
             "share_error": share_error,
             "imported": imported,
             "skipped": skipped,
+            "current_user": current_user,
         },
     )
 
@@ -86,7 +87,7 @@ def new_bookmark_form(
     request: Request,
     current_user: User = Depends(get_current_user_web),
 ) -> HTMLResponse:
-    return templates.TemplateResponse(request, "new_bookmark.html", {})
+    return templates.TemplateResponse(request, "new_bookmark.html", {"current_user": current_user})
 
 
 @router.post("/bookmarks/new")
@@ -102,7 +103,10 @@ def new_bookmark_submit(
     cleaned_url = url.strip()
     if not cleaned_url:
         return templates.TemplateResponse(
-            request, "new_bookmark.html", {"error": "Inserisci un URL"}, status_code=400
+            request,
+            "new_bookmark.html",
+            {"error": "Inserisci un URL", "current_user": current_user},
+            status_code=400,
         )
 
     bookmark = save_bookmark_with_metadata(
@@ -121,7 +125,9 @@ def import_bookmarks_form(
     request: Request,
     current_user: User = Depends(get_current_user_web),
 ) -> HTMLResponse:
-    return templates.TemplateResponse(request, "import_bookmarks.html", {})
+    return templates.TemplateResponse(
+        request, "import_bookmarks.html", {"current_user": current_user}
+    )
 
 
 @router.post("/bookmarks/import")
@@ -178,6 +184,7 @@ def organize_form(
             "remaining_count": remaining_count,
             "tags_value": tags_value,
             "is_suggestion": is_suggestion,
+            "current_user": current_user,
         },
     )
 

@@ -21,10 +21,26 @@
   <script src="/static/htmx.min.js" defer></script>
 </head>
 <body>
-  <div class="theme-switcher">
-    <label for="theme-select" class="visually-hidden">Tema</label>
-    <select id="theme-select"></select>
-  </div>
+  <header class="site-header">
+    <a href="/" class="brand">cozy-bookmarks</a>
+    {% if current_user %}
+    <details class="user-menu">
+      <summary class="user-menu-trigger" aria-label="Menu utente">&#9776;</summary>
+      <div class="user-menu-panel">
+        <p class="user-menu-email">{{ current_user.email }}</p>
+        <label for="theme-select" class="visually-hidden">Tema</label>
+        <select id="theme-select"></select>
+        <a href="/bookmarks/import">Importa</a>
+        <form method="post" action="/logout"><button type="submit" class="link-button">Esci</button></form>
+      </div>
+    </details>
+    {% else %}
+    <div class="theme-switcher-inline">
+      <label for="theme-select" class="visually-hidden">Tema</label>
+      <select id="theme-select"></select>
+    </div>
+    {% endif %}
+  </header>
   {% block body %}{% endblock %}
   <script>
     (function () {

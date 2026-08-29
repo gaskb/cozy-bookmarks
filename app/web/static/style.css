@@ -89,25 +89,9 @@
   border: 0;
 }
 
-.theme-switcher {
-  position: fixed;
-  top: 0.5rem;
-  right: 0.5rem;
-  z-index: 10;
-}
-
-.theme-switcher select {
-  font-size: 0.75rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: var(--md-shape-small);
-  border: 1px solid var(--md-outline-variant);
-  background: var(--md-surface-container);
-  color: var(--md-on-surface);
-}
-
 body {
   margin: 0;
-  padding: 3rem 1rem 1rem;
+  padding: 1rem;
   max-width: 42rem;
   margin-inline: auto;
   font-family: system-ui, sans-serif;
@@ -118,6 +102,92 @@ body {
 
 a {
   color: var(--md-primary);
+}
+
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.brand {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--md-on-background);
+  text-decoration: none;
+}
+
+.theme-switcher-inline select,
+.user-menu-panel select {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--md-shape-small);
+  border: 1px solid var(--md-outline-variant);
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-menu-trigger {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--md-shape-full);
+  color: var(--md-on-surface-variant);
+  font-size: 1.1rem;
+}
+
+.user-menu-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.user-menu[open] .user-menu-trigger {
+  background: var(--md-surface-variant);
+}
+
+.user-menu-panel {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 12rem;
+  padding: 0.75rem;
+  background: var(--md-surface-container-high);
+  border-radius: var(--md-shape-medium);
+  box-shadow: var(--md-elevation-2);
+}
+
+.user-menu-email {
+  font-size: 0.8rem;
+  color: var(--md-on-surface-variant);
+  margin: 0;
+  word-break: break-all;
+}
+
+.user-menu-panel a {
+  font-size: 0.9rem;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--md-on-surface-variant);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  text-decoration: none;
+  text-align: left;
 }
 
 .app-header {
@@ -131,22 +201,6 @@ a {
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
-}
-
-.link-button {
-  background: none;
-  border: none;
-  color: var(--md-on-surface-variant);
-  cursor: pointer;
-  font-size: 0.9rem;
-  padding: 0;
-  text-decoration: none;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
 }
 
 .search-form {
