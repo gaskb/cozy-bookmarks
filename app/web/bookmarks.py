@@ -29,12 +29,15 @@ def bookmark_list(
     request: Request,
     status: BookmarkStatus = BookmarkStatus.DA_ORGANIZZARE,
     tag: str | None = None,
+    q: str | None = None,
     shared: bool = False,
     share_error: str | None = None,
+    imported: int | None = None,
+    skipped: int | None = None,
     current_user: User = Depends(get_current_user_web),
     db: OrmSession = Depends(get_db),
 ) -> HTMLResponse:
-    bookmarks = bookmark_domain.list_bookmarks(db, current_user.id, status=status, tag=tag)
+    bookmarks = bookmark_domain.list_bookmarks(db, current_user.id, status=status, tag=tag, query_text=q)
     pinned_tags = bookmark_domain.list_tag_names(db, current_user.id, pinned=True)
     all_tags = bookmark_domain.list_tag_names(db, current_user.id, pinned=False)
     return templates.TemplateResponse(
@@ -46,8 +49,11 @@ def bookmark_list(
             "pinned_tags": pinned_tags,
             "all_tags": all_tags,
             "selected_tag": tag,
+            "query": q,
             "shared": shared,
             "share_error": share_error,
+            "imported": imported,
+            "skipped": skipped,
         },
     )
 

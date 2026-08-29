@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import enum
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, Table, Text
+from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, Table, Text, or_
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.orm import Session as OrmSession
 
@@ -108,12 +108,23 @@ def list_bookmarks(
     user_id: int,
     status: BookmarkStatus | None = None,
     tag: str | None = None,
+    query_text: str | None = None,
 ) -> list[Bookmark]:
     query = db.query(Bookmark).filter(Bookmark.user_id == user_id)
     if status is not None:
         query = query.filter(Bookmark.status == status)
     if tag is not None:
         query = query.join(Bookmark.tags).filter(Tag.name == tag.strip().lower())
+    if query_text and query_text.strip():
+        pattern = f"%{query_text.strip()}%"
+        query = query.filter(
+            or_(
+                Bookmark.title.ilike(pattern),
+                Bookmark.note.ilike(pattern),
+                Bookmark.url.ilike(pattern),
+                Bookmark.tags.any(Tag.name.ilike(pattern)),
+            )
+        )
     return query.order_by(Bookmark.created_at.desc()).all()
 
 
