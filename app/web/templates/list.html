@@ -12,6 +12,23 @@
 <nav class="tabs">
   <a href="/?status=da_organizzare" class="{{ 'active' if status == 'da_organizzare' else '' }}">Da organizzare</a>
   <a href="/?status=organizzato" class="{{ 'active' if status == 'organizzato' else '' }}">Organizzati</a>
+  {% for t in pinned_tags %}
+  <span class="tab-pinned">
+    <a href="/?status={{ status }}&tag={{ t }}" class="{{ 'active' if t == selected_tag else '' }}">{{ t }}</a>
+    <form method="post" action="/tags/unpin" class="unpin-form">
+      <input type="hidden" name="name" value="{{ t }}">
+      <button type="submit" class="unpin-btn" title="Rimuovi tab" aria-label="Rimuovi tab {{ t }}">&times;</button>
+    </form>
+  </span>
+  {% endfor %}
+  <details class="tab-add">
+    <summary title="Aggiungi tab">+</summary>
+    <form method="post" action="/tags/pin" class="tab-add-form">
+      <label for="new-tab-name" class="visually-hidden">Nome tab</label>
+      <input type="text" id="new-tab-name" name="name" placeholder="Nome tab" required maxlength="100">
+      <button type="submit">Aggiungi</button>
+    </form>
+  </details>
 </nav>
 
 {% if all_tags %}

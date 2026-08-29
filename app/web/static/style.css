@@ -185,6 +185,71 @@ a {
   border-color: transparent;
 }
 
+.tab-pinned {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.unpin-form {
+  display: contents;
+}
+
+.unpin-btn {
+  background: none;
+  border: none;
+  color: var(--md-on-surface-variant);
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0 0.2rem;
+  cursor: pointer;
+}
+
+.tab-add {
+  display: inline-block;
+}
+
+.tab-add summary {
+  display: inline-block;
+  list-style: none;
+  cursor: pointer;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--md-shape-full);
+  border: 1px dashed var(--md-outline);
+  color: var(--md-on-surface-variant);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.tab-add summary::-webkit-details-marker {
+  display: none;
+}
+
+.tab-add[open] summary {
+  border-style: solid;
+}
+
+.tab-add-form {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.tab-add-form input {
+  flex: 1;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.5rem;
+}
+
+.tab-add-form button {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--md-shape-full);
+  border: none;
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+}
+
 .bookmark-list {
   list-style: none;
   margin: 0;

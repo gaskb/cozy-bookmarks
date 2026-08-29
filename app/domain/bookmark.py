@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import enum
 
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, Table, Text
+from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.orm import Session as OrmSession
 
@@ -30,6 +30,7 @@ class Tag(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
+    pinned: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
 
 class Bookmark(Base):
@@ -116,9 +117,26 @@ def list_bookmarks(
     return query.order_by(Bookmark.created_at.desc()).all()
 
 
-def list_tag_names(db: OrmSession, user_id: int) -> list[str]:
-    tags = db.query(Tag).filter(Tag.user_id == user_id).order_by(Tag.name).all()
-    return [tag.name for tag in tags]
+def list_tag_names(db: OrmSession, user_id: int, pinned: bool | None = None) -> list[str]:
+    query = db.query(Tag).filter(Tag.user_id == user_id)
+    if pinned is not None:
+        query = query.filter(Tag.pinned == pinned)
+    return [tag.name for tag in query.order_by(Tag.name).all()]
+
+
+def pin_tag(db: OrmSession, user_id: int, name: str) -> Tag:
+    tag = _get_or_create_tags(db, user_id, [name])[0]
+    tag.pinned = True
+    db.commit()
+    db.refresh(tag)
+    return tag
+
+
+def unpin_tag(db: OrmSession, user_id: int, name: str) -> None:
+    tag = db.query(Tag).filter(Tag.user_id == user_id, Tag.name == name.strip().lower()).first()
+    if tag is not None:
+        tag.pinned = False
+        db.commit()
 
 
 def count_to_organize(db: OrmSession, user_id: int) -> int:

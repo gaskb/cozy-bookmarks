@@ -35,19 +35,43 @@ def bookmark_list(
     db: OrmSession = Depends(get_db),
 ) -> HTMLResponse:
     bookmarks = bookmark_domain.list_bookmarks(db, current_user.id, status=status, tag=tag)
-    all_tags = bookmark_domain.list_tag_names(db, current_user.id)
+    pinned_tags = bookmark_domain.list_tag_names(db, current_user.id, pinned=True)
+    all_tags = bookmark_domain.list_tag_names(db, current_user.id, pinned=False)
     return templates.TemplateResponse(
         request,
         "list.html",
         {
             "bookmarks": bookmarks,
             "status": status.value,
+            "pinned_tags": pinned_tags,
             "all_tags": all_tags,
             "selected_tag": tag,
             "shared": shared,
             "share_error": share_error,
         },
     )
+
+
+@router.post("/tags/pin")
+def pin_tag_route(
+    name: str = Form(...),
+    current_user: User = Depends(get_current_user_web),
+    db: OrmSession = Depends(get_db),
+) -> RedirectResponse:
+    cleaned = name.strip()
+    if cleaned:
+        bookmark_domain.pin_tag(db, current_user.id, cleaned)
+    return RedirectResponse("/", status_code=303)
+
+
+@router.post("/tags/unpin")
+def unpin_tag_route(
+    name: str = Form(...),
+    current_user: User = Depends(get_current_user_web),
+    db: OrmSession = Depends(get_db),
+) -> RedirectResponse:
+    bookmark_domain.unpin_tag(db, current_user.id, name)
+    return RedirectResponse("/", status_code=303)
 
 
 @router.get("/bookmarks/new", response_class=HTMLResponse)
