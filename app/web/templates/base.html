@@ -89,12 +89,28 @@
       if (!bookmarkList || typeof Sortable === "undefined") {
         return;
       }
+      var dropBar = document.getElementById("tag-drop-bar");
+
       Sortable.create(bookmarkList, {
         handle: ".drag-handle",
         animation: 150,
         delay: 250,
         delayOnTouchOnly: true,
+        group: { name: "bookmarks", pull: "clone", put: false },
+        onStart: function () {
+          if (dropBar) {
+            dropBar.classList.add("active");
+          }
+        },
         onEnd: function (evt) {
+          if (dropBar) {
+            dropBar.classList.remove("active");
+          }
+          if (evt.to !== evt.from) {
+            // dropped on a tag target instead of reordered within the list -
+            // that target's own onAdd handles it, nothing to persist here
+            return;
+          }
           var id = evt.item.id.replace("bookmark-", "");
           var above = evt.item.previousElementSibling;
           var below = evt.item.nextElementSibling;
@@ -107,6 +123,27 @@
           });
         },
       });
+
+      if (dropBar) {
+        dropBar.querySelectorAll(".tag-drop-target").forEach(function (target) {
+          Sortable.create(target, {
+            group: { name: "bookmarks", pull: false, put: true },
+            sort: false,
+            onAdd: function (evt) {
+              var id = evt.item.id.replace("bookmark-", "");
+              var tagName = target.dataset.tagName;
+              evt.item.remove();
+              fetch("/bookmarks/" + id + "/tags/add", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "name=" + encodeURIComponent(tagName),
+              }).then(function () {
+                window.location.reload();
+              });
+            },
+          });
+        });
+      }
     });
 
     document.addEventListener("DOMContentLoaded", function () {

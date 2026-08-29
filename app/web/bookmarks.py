@@ -182,6 +182,17 @@ def reorder_bookmark_route(
     return PlainTextResponse("")
 
 
+@router.post("/bookmarks/{bookmark_id}/tags/add")
+def add_tag_route(
+    bookmark_id: int,
+    name: str = Form(...),
+    current_user: User = Depends(get_current_user_web),
+    db: OrmSession = Depends(get_db),
+) -> PlainTextResponse:
+    bookmark_domain.add_tag_to_bookmark(db, current_user.id, bookmark_id, name)
+    return PlainTextResponse("")
+
+
 @router.get("/bookmarks/{bookmark_id}/organize", response_class=HTMLResponse)
 def organize_form(
     request: Request,

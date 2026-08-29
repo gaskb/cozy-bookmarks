@@ -278,6 +278,16 @@ def reorder_bookmark(
     db.commit()
 
 
+def add_tag_to_bookmark(db: OrmSession, user_id: int, bookmark_id: int, tag_name: str) -> None:
+    bookmark = get_bookmark(db, user_id, bookmark_id)
+    if bookmark is None:
+        return
+    tag = _get_or_create_tags(db, user_id, [tag_name])[0]
+    if tag not in bookmark.tags:
+        bookmark.tags.append(tag)
+        db.commit()
+
+
 def delete_bookmark(db: OrmSession, user_id: int, bookmark_id: int) -> bool:
     bookmark = get_bookmark(db, user_id, bookmark_id)
     if bookmark is None:

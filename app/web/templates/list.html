@@ -44,6 +44,17 @@
 </nav>
 {% endif %}
 
+{% if pinned_tags %}
+<div class="tag-drop-bar" id="tag-drop-bar">
+  <p class="tag-drop-hint">Trascina qui per taggare</p>
+  <div class="tag-drop-targets">
+    {% for t in pinned_tags %}
+    <div class="tag-drop-target" data-tag-name="{{ t }}">{{ t }}</div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
 <ul id="bookmark-list" class="bookmark-list">
   {% for bookmark in bookmarks %}
     {% include "_bookmark_row.html" %}
