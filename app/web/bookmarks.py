@@ -6,6 +6,7 @@ from app.db import get_db
 from app.domain import bookmark as bookmark_domain
 from app.domain.bookmark import BookmarkStatus
 from app.domain.user import User
+from app.orchestration.save_bookmark import save_bookmark_with_metadata
 from app.web.deps import get_current_user_web
 from app.web.templating import templates
 
@@ -47,6 +48,41 @@ def bookmark_list(
             "share_error": share_error,
         },
     )
+
+
+@router.get("/bookmarks/new", response_class=HTMLResponse)
+def new_bookmark_form(
+    request: Request,
+    current_user: User = Depends(get_current_user_web),
+) -> HTMLResponse:
+    return templates.TemplateResponse(request, "new_bookmark.html", {})
+
+
+@router.post("/bookmarks/new")
+def new_bookmark_submit(
+    request: Request,
+    url: str = Form(""),
+    title: str = Form(""),
+    note: str = Form(""),
+    tags: str = Form(""),
+    current_user: User = Depends(get_current_user_web),
+    db: OrmSession = Depends(get_db),
+):
+    cleaned_url = url.strip()
+    if not cleaned_url:
+        return templates.TemplateResponse(
+            request, "new_bookmark.html", {"error": "Inserisci un URL"}, status_code=400
+        )
+
+    bookmark = save_bookmark_with_metadata(
+        db,
+        user_id=current_user.id,
+        url=cleaned_url,
+        title=_normalize(title),
+        note=_normalize(note),
+        tag_names=_parse_tags(tags) or None,
+    )
+    return RedirectResponse(f"/bookmarks/{bookmark.id}/organize", status_code=303)
 
 
 @router.delete("/bookmarks/{bookmark_id}/delete")

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Nuovo bookmark — cozy-bookmarks{% endblock %}
+{% block body %}
+<header class="app-header">
+  <h1>Nuovo bookmark</h1>
+  <a href="/">Torna alla lista</a>
+</header>
+
+<form method="post" action="/bookmarks/new" class="organize-form">
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  <label>URL
+    <input type="url" name="url" required autofocus placeholder="https://...">
+  </label>
+  <label>Titolo (opzionale)
+    <input type="text" name="title">
+  </label>
+  <label>Note (opzionale)
+    <textarea name="note" rows="3"></textarea>
+  </label>
+  <label>Tag (separati da virgola, opzionale)
+    <input type="text" name="tags">
+  </label>
+  <button type="submit">Salva</button>
+</form>
+{% endblock %}
