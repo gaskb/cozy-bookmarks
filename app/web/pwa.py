@@ -8,8 +8,8 @@ router = APIRouter()
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 MANIFEST = {
-    "name": "cozy-bookmarks",
-    "short_name": "cozy-bookmarks",
+    "name": "Cozy Bookmarks",
+    "short_name": "Cozy Bookmarks",
     "description": "Salva link disorganizzati, organizzali dopo.",
     "start_url": "/",
     "scope": "/",

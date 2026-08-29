@@ -5,7 +5,7 @@ def test_manifest_has_expected_shape(client):
     assert response.headers["content-type"].startswith("application/manifest+json")
 
     body = response.json()
-    assert body["name"] == "cozy-bookmarks"
+    assert body["name"] == "Cozy Bookmarks"
     assert body["display"] == "standalone"
     assert body["share_target"]["action"] == "/share-target"
     assert body["share_target"]["method"] == "POST"

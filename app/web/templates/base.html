@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}cozy-bookmarks{% endblock %}</title>
+  <title>{% block title %}Cozy Bookmarks{% endblock %}</title>
   <script>
     (function () {
       try {
@@ -22,7 +22,10 @@
 </head>
 <body>
   <header class="site-header">
-    <a href="/" class="brand">cozy-bookmarks</a>
+    <a href="/" class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg>
+      Cozy Bookmarks
+    </a>
     {% if current_user %}
     <details class="user-menu">
       <summary class="user-menu-trigger" aria-label="Menu utente">&#9776;</summary>
