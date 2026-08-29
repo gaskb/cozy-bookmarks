@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, Depends, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from sqlalchemy.orm import Session as OrmSession
@@ -194,6 +196,9 @@ def organize_form(
     remaining_count = bookmark_domain.count_to_organize(db, current_user.id)
     is_suggestion = not bookmark.tags and bool(bookmark.ai_suggested_tags)
     tags_value = ", ".join(tag.name for tag in bookmark.tags) or (bookmark.ai_suggested_tags or "")
+    most_used_tags = bookmark_domain.list_most_used_tag_names(db, current_user.id)
+    recent_tags = bookmark_domain.list_recent_tag_names(db, current_user.id)
+    all_tags = bookmark_domain.list_tag_names(db, current_user.id)
     return templates.TemplateResponse(
         request,
         "organize.html",
@@ -203,6 +208,9 @@ def organize_form(
             "tags_value": tags_value,
             "is_suggestion": is_suggestion,
             "current_user": current_user,
+            "most_used_tags": most_used_tags,
+            "recent_tags": recent_tags,
+            "all_tags_json": json.dumps(all_tags).replace("<", "\\u003c"),
         },
     )
 

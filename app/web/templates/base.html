@@ -108,6 +108,63 @@
         },
       });
     });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      var tagsInput = document.getElementById("tags-input");
+      var tagSearch = document.getElementById("tag-search");
+      var suggestionsBox = document.getElementById("tag-suggestions");
+      var tagsDataEl = document.getElementById("all-tags-data");
+      if (!tagsInput || !tagSearch || !suggestionsBox || !tagsDataEl) {
+        return;
+      }
+
+      var allTags = JSON.parse(tagsDataEl.textContent || "[]");
+      var defaultSuggestionsHtml = suggestionsBox.innerHTML;
+
+      function addTagToInput(name) {
+        var current = tagsInput.value
+          .split(",")
+          .map(function (s) { return s.trim(); })
+          .filter(Boolean);
+        if (current.indexOf(name) === -1) {
+          current.push(name);
+        }
+        tagsInput.value = current.join(", ");
+      }
+
+      suggestionsBox.addEventListener("click", function (evt) {
+        if (evt.target.classList.contains("tag-chip")) {
+          addTagToInput(evt.target.dataset.tag);
+        }
+      });
+
+      tagSearch.addEventListener("input", function () {
+        var query = tagSearch.value.trim().toLowerCase();
+        if (!query) {
+          suggestionsBox.innerHTML = defaultSuggestionsHtml;
+          return;
+        }
+        var matches = allTags.filter(function (t) {
+          return t.toLowerCase().indexOf(query) !== -1;
+        });
+        suggestionsBox.textContent = "";
+        if (matches.length === 0) {
+          var noMatch = document.createElement("span");
+          noMatch.className = "tag-suggestion-label";
+          noMatch.textContent = "Nessun tag corrispondente";
+          suggestionsBox.appendChild(noMatch);
+          return;
+        }
+        matches.forEach(function (t) {
+          var button = document.createElement("button");
+          button.type = "button";
+          button.className = "tag-chip";
+          button.dataset.tag = t;
+          button.textContent = t;
+          suggestionsBox.appendChild(button);
+        });
+      });
+    });
   </script>
 </body>
 </html>

@@ -24,9 +24,30 @@
     <textarea name="note" rows="3">{{ bookmark.note or '' }}</textarea>
   </label>
   <label>Tag (separati da virgola)
-    <input type="text" name="tags" value="{{ tags_value }}">
+    <input type="text" name="tags" id="tags-input" value="{{ tags_value }}">
     {% if is_suggestion %}<span class="ai-hint">suggerimento AI, verifica prima di salvare</span>{% endif %}
   </label>
+
+  <div class="tag-picker">
+    <label for="tag-search" class="visually-hidden">Cerca tag</label>
+    <input type="text" id="tag-search" placeholder="Cerca o aggiungi tag..." autocomplete="off">
+    <div class="tag-suggestions" id="tag-suggestions">
+      {% if most_used_tags %}
+      <div class="tag-suggestion-group">
+        <span class="tag-suggestion-label">Più usati</span>
+        {% for t in most_used_tags %}<button type="button" class="tag-chip" data-tag="{{ t }}">{{ t }}</button>{% endfor %}
+      </div>
+      {% endif %}
+      {% if recent_tags %}
+      <div class="tag-suggestion-group">
+        <span class="tag-suggestion-label">Recenti</span>
+        {% for t in recent_tags %}<button type="button" class="tag-chip" data-tag="{{ t }}">{{ t }}</button>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <script type="application/json" id="all-tags-data">{{ all_tags_json | safe }}</script>
+
   <button type="submit">Salva e prossimo</button>
 </form>
 

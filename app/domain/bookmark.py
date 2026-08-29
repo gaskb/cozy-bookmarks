@@ -3,7 +3,19 @@ from __future__ import annotations
 import datetime as dt
 import enum
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, Float, ForeignKey, String, Table, Text, or_
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    String,
+    Table,
+    Text,
+    func,
+    or_,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.orm import Session as OrmSession
 
@@ -33,6 +45,7 @@ class Tag(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     pinned: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
 
 
 class Bookmark(Base):
@@ -151,6 +164,30 @@ def list_tag_names(db: OrmSession, user_id: int, pinned: bool | None = None) -> 
     if pinned is not None:
         query = query.filter(Tag.pinned == pinned)
     return [tag.name for tag in query.order_by(Tag.name).all()]
+
+
+def list_most_used_tag_names(db: OrmSession, user_id: int, limit: int = 8) -> list[str]:
+    rows = (
+        db.query(Tag.name)
+        .join(bookmark_tags, bookmark_tags.c.tag_id == Tag.id)
+        .filter(Tag.user_id == user_id)
+        .group_by(Tag.id)
+        .order_by(func.count(bookmark_tags.c.bookmark_id).desc())
+        .limit(limit)
+        .all()
+    )
+    return [row[0] for row in rows]
+
+
+def list_recent_tag_names(db: OrmSession, user_id: int, limit: int = 8) -> list[str]:
+    tags = (
+        db.query(Tag)
+        .filter(Tag.user_id == user_id)
+        .order_by(Tag.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+    return [tag.name for tag in tags]
 
 
 def pin_tag(db: OrmSession, user_id: int, name: str) -> Tag:

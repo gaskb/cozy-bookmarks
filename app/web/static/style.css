@@ -566,6 +566,52 @@ textarea:focus {
   font-size: 0.8rem;
 }
 
+.tag-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: -0.5rem;
+}
+
+.tag-picker input {
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.tag-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.tag-suggestion-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tag-suggestion-label {
+  font-size: 0.75rem;
+  color: var(--md-on-surface-variant);
+  margin-right: 0.2rem;
+}
+
+.tag-chip {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--md-shape-full);
+  border: 1px solid var(--md-outline-variant);
+  background: var(--md-surface-variant);
+  color: var(--md-on-surface-variant);
+  cursor: pointer;
+}
+
+.tag-chip:hover {
+  border-color: var(--md-primary);
+  color: var(--md-primary);
+}
+
 .login button[type="submit"],
 .organize-form button[type="submit"] {
   background: var(--md-primary);
