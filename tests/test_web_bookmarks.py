@@ -45,6 +45,33 @@ def test_list_page_shows_empty_state(authed_client):
     assert "Nessun bookmark" in response.text
 
 
+def test_bookmark_row_card_links_to_organize_instead_of_a_visible_link(authed_client):
+    created = _create_bookmark(authed_client, "https://example.com", title="Example")
+
+    response = authed_client.get("/?status=da_organizzare")
+
+    assert f'href="/bookmarks/{created["id"]}/organize"' in response.text
+    assert ">Organizza<" not in response.text
+
+
+def test_bookmark_row_title_still_links_to_the_real_url(authed_client):
+    _create_bookmark(authed_client, "https://example.com", title="Example")
+
+    response = authed_client.get("/?status=da_organizzare")
+
+    assert 'class="bookmark-title" href="https://example.com"' in response.text
+
+
+def test_bookmark_row_shows_created_at_timestamp(authed_client):
+    created = _create_bookmark(authed_client, "https://example.com")
+    created_at = created["created_at"]
+    expected = created_at[:16].replace("T", " ")
+
+    response = authed_client.get("/?status=da_organizzare")
+
+    assert f'<p class="created-at">{expected}</p>' in response.text
+
+
 def test_delete_row_via_htmx_removes_bookmark(authed_client):
     created = _create_bookmark(authed_client, "https://example.com")
 
