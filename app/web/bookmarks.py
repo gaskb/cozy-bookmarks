@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from sqlalchemy.orm import Session as OrmSession
 
@@ -6,6 +6,7 @@ from app.db import get_db
 from app.domain import bookmark as bookmark_domain
 from app.domain.bookmark import BookmarkStatus
 from app.domain.user import User
+from app.integrations.bookmark_html_import import parse_netscape_bookmarks
 from app.orchestration.save_bookmark import save_bookmark_with_metadata
 from app.web.deps import get_current_user_web
 from app.web.templating import templates
@@ -113,6 +114,36 @@ def new_bookmark_submit(
         tag_names=_parse_tags(tags) or None,
     )
     return RedirectResponse(f"/bookmarks/{bookmark.id}/organize", status_code=303)
+
+
+@router.get("/bookmarks/import", response_class=HTMLResponse)
+def import_bookmarks_form(
+    request: Request,
+    current_user: User = Depends(get_current_user_web),
+) -> HTMLResponse:
+    return templates.TemplateResponse(request, "import_bookmarks.html", {})
+
+
+@router.post("/bookmarks/import")
+async def import_bookmarks_submit(
+    file: UploadFile,
+    current_user: User = Depends(get_current_user_web),
+    db: OrmSession = Depends(get_db),
+) -> RedirectResponse:
+    raw = await file.read()
+    content = raw.decode("utf-8", errors="replace")
+    links = parse_netscape_bookmarks(content)
+
+    imported_count = 0
+    skipped_count = 0
+    for link in links:
+        if bookmark_domain.find_bookmark_by_url(db, current_user.id, link.url) is not None:
+            skipped_count += 1
+            continue
+        bookmark_domain.create_bookmark(db, user_id=current_user.id, url=link.url, title=link.title)
+        imported_count += 1
+
+    return RedirectResponse(f"/?imported={imported_count}&skipped={skipped_count}", status_code=303)
 
 
 @router.delete("/bookmarks/{bookmark_id}/delete")

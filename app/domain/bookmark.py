@@ -103,6 +103,10 @@ def get_bookmark(db: OrmSession, user_id: int, bookmark_id: int) -> Bookmark | N
     )
 
 
+def find_bookmark_by_url(db: OrmSession, user_id: int, url: str) -> Bookmark | None:
+    return db.query(Bookmark).filter(Bookmark.user_id == user_id, Bookmark.url == url).first()
+
+
 def list_bookmarks(
     db: OrmSession,
     user_id: int,

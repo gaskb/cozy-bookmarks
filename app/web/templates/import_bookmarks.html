@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Importa bookmark — cozy-bookmarks{% endblock %}
+{% block body %}
+<header class="app-header">
+  <h1>Importa bookmark</h1>
+  <a href="/">Torna alla lista</a>
+</header>
+
+<p class="remaining">Carica il file HTML esportato dal tuo browser (di solito: Impostazioni → Bookmark → Esporta bookmark). I link già salvati vengono saltati automaticamente.</p>
+
+<form method="post" action="/bookmarks/import" enctype="multipart/form-data" class="organize-form">
+  <label>File
+    <input type="file" name="file" accept=".html,text/html" required>
+  </label>
+  <button type="submit">Importa</button>
+</form>
+{% endblock %}
