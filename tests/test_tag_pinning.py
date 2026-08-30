@@ -45,6 +45,16 @@ def test_pinned_tag_still_filters_bookmarks(authed_client):
     assert "other.example.com" not in response.text
 
 
+def test_selecting_a_tag_highlights_only_the_tag_not_the_status_tab(authed_client):
+    _create_bookmark(authed_client, "https://example.com", tags=["python"])
+    authed_client.post("/tags/pin", data={"name": "python"})
+
+    response = authed_client.get("/?status=da_organizzare&tag=python")
+
+    assert '<a href="/?status=da_organizzare" class="">Da organizzare</a>' in response.text
+    assert 'class="active">python</a>' in response.text
+
+
 def test_unpin_tag_requires_auth(client):
     response = client.post("/tags/unpin", data={"name": "python"}, follow_redirects=False)
 

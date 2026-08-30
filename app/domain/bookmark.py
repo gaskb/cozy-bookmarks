@@ -285,7 +285,8 @@ def add_tag_to_bookmark(db: OrmSession, user_id: int, bookmark_id: int, tag_name
     tag = _get_or_create_tags(db, user_id, [tag_name])[0]
     if tag not in bookmark.tags:
         bookmark.tags.append(tag)
-        db.commit()
+    bookmark.status = BookmarkStatus.ORGANIZZATO
+    db.commit()
 
 
 def delete_bookmark(db: OrmSession, user_id: int, bookmark_id: int) -> bool:

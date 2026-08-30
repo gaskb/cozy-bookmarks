@@ -14,8 +14,8 @@
 </form>
 
 <nav class="tabs">
-  <a href="/?status=da_organizzare" class="{{ 'active' if status == 'da_organizzare' else '' }}">Da organizzare</a>
-  <a href="/?status=organizzato" class="{{ 'active' if status == 'organizzato' else '' }}">Organizzati</a>
+  <a href="/?status=da_organizzare" class="{{ 'active' if status == 'da_organizzare' and not selected_tag else '' }}">Da organizzare</a>
+  <a href="/?status=organizzato" class="{{ 'active' if status == 'organizzato' and not selected_tag else '' }}">Organizzati</a>
   {% for t in pinned_tags %}
   <span class="tab-pinned">
     <a href="/?status={{ status }}&tag={{ t }}" class="{{ 'active' if t == selected_tag else '' }}">{{ t }}</a>

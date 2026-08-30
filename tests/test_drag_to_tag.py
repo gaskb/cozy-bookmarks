@@ -39,6 +39,16 @@ def test_add_tag_creates_the_tag_if_it_does_not_exist_yet(authed_client):
     assert updated["tags"] == ["brand-new"]
 
 
+def test_add_tag_moves_bookmark_out_of_da_organizzare(authed_client):
+    created = _create_bookmark(authed_client, "https://example.com")
+    assert created["status"] == "da_organizzare"
+
+    authed_client.post(f"/bookmarks/{created['id']}/tags/add", data={"name": "apps"})
+
+    updated = authed_client.get(f"/bookmarks/{created['id']}").json()
+    assert updated["status"] == "organizzato"
+
+
 def test_list_page_shows_drop_bar_only_when_pinned_tags_exist(authed_client):
     without_pins = authed_client.get("/")
     assert 'id="tag-drop-bar"' not in without_pins.text
