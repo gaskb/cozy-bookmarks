@@ -10,6 +10,7 @@ from app.domain.bookmark import BookmarkStatus
 from app.domain.user import User
 from app.integrations.bookmark_export import export_json_data, export_netscape_html
 from app.integrations.bookmark_html_import import parse_netscape_bookmarks
+from app.orchestration.daily_digest import send_test_daily_digest
 from app.orchestration.save_bookmark import (
     enrich_bookmark_task,
     save_bookmark_fast,
@@ -42,6 +43,8 @@ def bookmark_list(
     share_error: str | None = None,
     imported: int | None = None,
     skipped: int | None = None,
+    test_digest_sent: int | None = None,
+    test_digest_error: str | None = None,
     current_user: User = Depends(get_current_user_web),
     db: OrmSession = Depends(get_db),
 ) -> HTMLResponse:
@@ -62,6 +65,8 @@ def bookmark_list(
             "share_error": share_error,
             "imported": imported,
             "skipped": skipped,
+            "test_digest_sent": test_digest_sent,
+            "test_digest_error": test_digest_error,
             "current_user": current_user,
         },
     )
@@ -327,6 +332,31 @@ def export_json(
         media_type="application/json",
         headers={"Content-Disposition": 'attachment; filename="cozy-bookmarks.json"'},
     )
+
+
+@router.post("/digest/send-test")
+def send_test_digest(
+    request: Request,
+    current_user: User = Depends(get_current_user_web),
+    db: OrmSession = Depends(get_db),
+) -> RedirectResponse:
+    count, error = send_test_daily_digest(db, current_user)
+    referer = request.headers.get("referer") or "/"
+    url_parts = referer.split("?", 1)
+    base_path = url_parts[0]
+    query_params = []
+    if len(url_parts) > 1:
+        for p in url_parts[1].split("&"):
+            if p and not p.startswith("test_digest_"):
+                query_params.append(p)
+
+    if error:
+        query_params.append(f"test_digest_error={error}")
+    else:
+        query_params.append(f"test_digest_sent={count}")
+
+    redirect_url = base_path + ("?" + "&".join(query_params) if query_params else "")
+    return RedirectResponse(redirect_url, status_code=303)
 
 
 def _redirect_to_next_or_list(db: OrmSession, user_id: int, exclude_id: int) -> RedirectResponse:

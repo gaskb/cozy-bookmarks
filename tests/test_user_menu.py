@@ -5,6 +5,7 @@ def test_user_menu_shows_email_theme_import_and_logout(authed_client, user):
     assert f'<p class="user-menu-email">{user.email}</p>' in response.text
     assert 'id="theme-select"' in response.text
     assert 'href="/bookmarks/import"' in response.text
+    assert 'action="/digest/send-test"' in response.text
     assert 'action="/logout"' in response.text
 
 

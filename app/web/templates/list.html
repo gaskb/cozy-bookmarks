@@ -4,6 +4,8 @@
 {% if shared %}<p class="flash flash-ok">Bookmark salvato.</p>{% endif %}
 {% if share_error == "no_url" %}<p class="flash flash-error">Nessun link trovato nel contenuto condiviso.</p>{% endif %}
 {% if imported is not none %}<p class="flash flash-ok">Importati {{ imported }} bookmark{% if skipped %}, {{ skipped }} già presenti saltati{% endif %}.</p>{% endif %}
+{% if test_digest_sent is not none %}<p class="flash flash-ok">Email di prova inviata con successo ({{ test_digest_sent }} segnalibri inclusi).</p>{% endif %}
+{% if test_digest_error %}<p class="flash flash-error">Errore invio email di prova: {{ test_digest_error }}</p>{% endif %}
 
 <form method="get" action="/" class="search-form">
   <input type="hidden" name="status" value="{{ status }}">

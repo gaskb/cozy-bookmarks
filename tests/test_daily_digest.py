@@ -105,3 +105,63 @@ def test_send_daily_digest_cli(db_session, user, monkeypatch, capsys):
     assert "Daily digest completed" in captured.out
     assert "delivered 1 bookmarks" in captured.out
 
+
+def test_send_test_daily_digest_yesterday_fallback_to_latest(db_session, user, monkeypatch):
+    sent = []
+    monkeypatch.setattr(
+        mailer,
+        "send_email",
+        lambda to_email, subject, html_content, text_content=None: sent.append((to_email, subject, html_content)) or True,
+    )
+
+    for i in range(12):
+        bookmark_domain.create_bookmark(db_session, user_id=user.id, url=f"https://example.com/{i}", title=f"Bookmark {i}")
+
+    from app.orchestration import daily_digest
+    count, err = daily_digest.send_test_daily_digest(db_session, user)
+    assert count == 10
+    assert err is None
+    assert len(sent) == 1
+    assert "[Test]" in sent[0][1]
+
+    unsent = daily_digest.get_unsent_digest_bookmarks(db_session, user.id)
+    assert len(unsent) == 12
+
+
+def test_send_test_daily_digest_yesterday_match(db_session, user, monkeypatch):
+    sent = []
+    monkeypatch.setattr(
+        mailer,
+        "send_email",
+        lambda to_email, subject, html_content, text_content=None: sent.append((to_email, subject, html_content)) or True,
+    )
+
+    now = dt.datetime(2026, 9, 22, 10, 0, 0)
+    yesterday_time = dt.datetime(2026, 9, 21, 14, 0, 0)
+
+    b_yesterday = bookmark_domain.create_bookmark(db_session, user_id=user.id, url="https://yesterday.com", title="Yesterday Item")
+    b_yesterday.created_at = yesterday_time
+    db_session.commit()
+
+    b_today = bookmark_domain.create_bookmark(db_session, user_id=user.id, url="https://today.com", title="Today Item")
+    b_today.created_at = now
+    db_session.commit()
+
+    from app.orchestration import daily_digest
+    count, err = daily_digest.send_test_daily_digest(db_session, user, now=now)
+    assert count == 1
+    assert err is None
+    assert "Yesterday Item" in sent[0][2]
+    assert "Today Item" not in sent[0][2]
+
+
+def test_web_send_test_digest_route(authed_client, user, monkeypatch):
+    monkeypatch.setattr(mailer, "send_email", lambda *args, **kwargs: True)
+
+    authed_client.post("/bookmarks", json={"url": "https://test-menu-send.com"})
+
+    resp = authed_client.post("/digest/send-test", follow_redirects=True)
+    assert resp.status_code == 200
+    assert "Email di prova inviata con successo" in resp.text
+
+
