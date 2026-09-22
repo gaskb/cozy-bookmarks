@@ -77,3 +77,25 @@ def test_search_box_preserves_query_value(authed_client):
     response = authed_client.get("/?status=da_organizzare&q=hello")
 
     assert 'value="hello"' in response.text
+
+
+def test_search_matches_description(authed_client, monkeypatch):
+    from app.integrations.metadata_extractor import PageMetadata
+    from app.orchestration import save_bookmark
+
+    monkeypatch.setattr(
+        save_bookmark,
+        "fetch_metadata",
+        lambda url: PageMetadata(description="Caption segreta di un video speciale")
+        if "special" in url
+        else PageMetadata(),
+    )
+
+    _create_bookmark(authed_client, "https://special.example.com")
+    _create_bookmark(authed_client, "https://other.example.com")
+
+    response = authed_client.get("/?status=da_organizzare&q=speciale")
+
+    assert "special.example.com" in response.text
+    assert "other.example.com" not in response.text
+

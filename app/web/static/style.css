@@ -489,6 +489,23 @@ button {
   cursor: pointer;
 }
 
+button.secondary,
+.archive-form button {
+  background: none;
+  border: 1px solid var(--md-outline);
+  color: var(--md-on-surface-variant);
+  border-radius: var(--md-shape-full);
+  padding: 0.3rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+button.secondary:hover,
+.archive-form button:hover {
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+}
+
 button.danger,
 .delete-form button {
   background: none;
@@ -499,6 +516,13 @@ button.danger,
   font-size: 0.85rem;
   font-weight: 500;
 }
+
+.organize-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
 
 .empty {
   color: var(--md-on-surface-variant);

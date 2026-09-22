@@ -51,12 +51,18 @@
   <button type="submit">Salva e prossimo</button>
 </form>
 
-<form
-  method="post"
-  action="/bookmarks/{{ bookmark.id }}/organize/delete"
-  class="delete-form"
-  onsubmit="return confirm('Eliminare questo bookmark?')"
->
-  <button type="submit" class="danger">Elimina</button>
-</form>
+<div class="organize-actions">
+  <form method="post" action="/bookmarks/{{ bookmark.id }}/organize/archive" class="archive-form">
+    <button type="submit" class="secondary">Archivia e prossimo</button>
+  </form>
+  <form
+    method="post"
+    action="/bookmarks/{{ bookmark.id }}/organize/delete"
+    class="delete-form"
+    onsubmit="return confirm('Eliminare questo bookmark?')"
+  >
+    <button type="submit" class="danger">Elimina</button>
+  </form>
+</div>
 {% endblock %}
+

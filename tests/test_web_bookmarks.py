@@ -183,3 +183,37 @@ def test_bookmark_organize_page_requires_auth(client):
 
     assert response.status_code == 303
     assert response.headers["location"] == "/login"
+
+
+def test_archive_and_unarchive_web_routes(authed_client):
+    bm = _create_bookmark(authed_client, "https://to-archive.example.com")
+
+    archive_res = authed_client.post(f"/bookmarks/{bm['id']}/archive")
+    assert archive_res.status_code == 200
+
+    list_res = authed_client.get("/?status=archiviato")
+    assert "to-archive.example.com" in list_res.text
+    assert "Ripristina" in list_res.text
+
+    unarchive_res = authed_client.post(f"/bookmarks/{bm['id']}/unarchive")
+    assert unarchive_res.status_code == 200
+
+    list_res2 = authed_client.get("/?status=archiviato")
+    assert "to-archive.example.com" not in list_res2.text
+
+    done_res = authed_client.get("/?status=organizzato")
+    assert "to-archive.example.com" in done_res.text
+
+
+def test_organize_archive_redirects_to_next(authed_client):
+    first = _create_bookmark(authed_client, "https://first.example.com")
+    second = _create_bookmark(authed_client, "https://second.example.com")
+
+    response = authed_client.post(f"/bookmarks/{first['id']}/organize/archive", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert response.headers["location"] == f"/bookmarks/{second['id']}/organize"
+
+    get_response = authed_client.get(f"/bookmarks/{first['id']}")
+    assert get_response.json()["status"] == "archiviato"
+

@@ -1,6 +1,6 @@
 import json
 
-from fastapi import APIRouter, Depends, Form, Request, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from sqlalchemy.orm import Session as OrmSession
 
@@ -9,7 +9,11 @@ from app.domain import bookmark as bookmark_domain
 from app.domain.bookmark import BookmarkStatus
 from app.domain.user import User
 from app.integrations.bookmark_html_import import parse_netscape_bookmarks
-from app.orchestration.save_bookmark import save_bookmark_with_metadata
+from app.orchestration.save_bookmark import (
+    enrich_bookmark_task,
+    save_bookmark_fast,
+    save_bookmark_with_metadata,
+)
 from app.web.deps import get_current_user_web
 from app.web.templating import templates
 
@@ -95,6 +99,7 @@ def new_bookmark_form(
 @router.post("/bookmarks/new")
 def new_bookmark_submit(
     request: Request,
+    background_tasks: BackgroundTasks,
     url: str = Form(""),
     title: str = Form(""),
     note: str = Form(""),
@@ -111,7 +116,7 @@ def new_bookmark_submit(
             status_code=400,
         )
 
-    bookmark = save_bookmark_with_metadata(
+    bookmark = save_bookmark_fast(
         db,
         user_id=current_user.id,
         url=cleaned_url,
@@ -119,7 +124,9 @@ def new_bookmark_submit(
         note=_normalize(note),
         tag_names=_parse_tags(tags) or None,
     )
+    background_tasks.add_task(enrich_bookmark_task, bookmark.id, current_user.id)
     return RedirectResponse(f"/bookmarks/{bookmark.id}/organize", status_code=303)
+
 
 
 @router.get("/bookmarks/import", response_class=HTMLResponse)
@@ -162,6 +169,27 @@ def delete_bookmark_row(
 ) -> PlainTextResponse:
     bookmark_domain.delete_bookmark(db, current_user.id, bookmark_id)
     return PlainTextResponse("")
+
+
+@router.post("/bookmarks/{bookmark_id}/archive")
+def archive_bookmark_route(
+    bookmark_id: int,
+    current_user: User = Depends(get_current_user_web),
+    db: OrmSession = Depends(get_db),
+) -> PlainTextResponse:
+    bookmark_domain.archive_bookmark(db, current_user.id, bookmark_id)
+    return PlainTextResponse("")
+
+
+@router.post("/bookmarks/{bookmark_id}/unarchive")
+def unarchive_bookmark_route(
+    bookmark_id: int,
+    current_user: User = Depends(get_current_user_web),
+    db: OrmSession = Depends(get_db),
+) -> PlainTextResponse:
+    bookmark_domain.unarchive_bookmark(db, current_user.id, bookmark_id)
+    return PlainTextResponse("")
+
 
 
 @router.post("/bookmarks/{bookmark_id}/reorder")
@@ -258,6 +286,17 @@ def organize_delete(
 ):
     bookmark_domain.delete_bookmark(db, current_user.id, bookmark_id)
     return _redirect_to_next_or_list(db, current_user.id, exclude_id=bookmark_id)
+
+
+@router.post("/bookmarks/{bookmark_id}/organize/archive")
+def organize_archive(
+    bookmark_id: int,
+    current_user: User = Depends(get_current_user_web),
+    db: OrmSession = Depends(get_db),
+):
+    bookmark_domain.archive_bookmark(db, current_user.id, bookmark_id)
+    return _redirect_to_next_or_list(db, current_user.id, exclude_id=bookmark_id)
+
 
 
 def _redirect_to_next_or_list(db: OrmSession, user_id: int, exclude_id: int) -> RedirectResponse:

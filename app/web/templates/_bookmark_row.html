@@ -22,6 +22,23 @@
     <p class="created-at">{{ bookmark.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
   </div>
   <div class="actions">
+    {% if bookmark.status.value == "archiviato" %}
+    <button
+      hx-post="/bookmarks/{{ bookmark.id }}/unarchive"
+      hx-target="#bookmark-{{ bookmark.id }}"
+      hx-swap="outerHTML"
+      class="secondary btn-unarchive"
+      title="Ripristina"
+    >Ripristina</button>
+    {% else %}
+    <button
+      hx-post="/bookmarks/{{ bookmark.id }}/archive"
+      hx-target="#bookmark-{{ bookmark.id }}"
+      hx-swap="outerHTML"
+      class="secondary btn-archive"
+      title="Archivia"
+    >Archivia</button>
+    {% endif %}
     <button
       hx-delete="/bookmarks/{{ bookmark.id }}/delete"
       hx-target="#bookmark-{{ bookmark.id }}"
@@ -31,3 +48,4 @@
     >Elimina</button>
   </div>
 </li>
+

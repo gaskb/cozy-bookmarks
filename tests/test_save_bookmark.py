@@ -135,3 +135,56 @@ def test_save_bookmark_appends_tiktok_note_to_user_supplied_note(db_session, use
     )
 
     assert bookmark.note == "mia nota personale\nLink citato nella caption: https://example.com/x"
+
+
+def test_save_bookmark_fast_creates_unembellished_bookmark_immediately(db_session, user):
+    from app.orchestration.save_bookmark import save_bookmark_fast
+
+    bookmark = save_bookmark_fast(
+        db_session,
+        user_id=user.id,
+        url="https://example.com/fast",
+        title="Immediate Title",
+        note="Immediate Note",
+    )
+
+    assert bookmark.id is not None
+    assert bookmark.url == "https://example.com/fast"
+    assert bookmark.title == "Immediate Title"
+    assert bookmark.description is None
+    assert bookmark.image_url is None
+    assert bookmark.favicon_url is None
+
+
+def test_enrich_bookmark_passes_existing_tags_to_ai(db_session, user, monkeypatch):
+    from app.domain.bookmark import create_bookmark, _get_or_create_tags
+    from app.orchestration.save_bookmark import enrich_bookmark
+
+    # Create existing tags for the user
+    _get_or_create_tags(db_session, user.id, ["python", "homelab", "docker"])
+    db_session.commit()
+
+    captured_existing_tags = []
+
+    def _mock_suggest(provider, url, title, description, existing_tags=None):
+        if existing_tags:
+            captured_existing_tags.extend(existing_tags)
+        return ["python", "homelab"]
+
+    monkeypatch.setattr(save_bookmark, "suggest_tags_safely", _mock_suggest)
+    monkeypatch.setattr(
+        save_bookmark,
+        "fetch_metadata",
+        lambda url: PageMetadata(title="Enriched Title", description="Enriched Desc"),
+    )
+
+    bookmark = create_bookmark(db_session, user_id=user.id, url="https://example.com/to-enrich")
+    enriched = enrich_bookmark(db_session, bookmark)
+
+    assert enriched.title == "Enriched Title"
+    assert enriched.description == "Enriched Desc"
+    assert enriched.ai_suggested_tags == "python, homelab"
+    assert "docker" in captured_existing_tags
+    assert "homelab" in captured_existing_tags
+    assert "python" in captured_existing_tags
+

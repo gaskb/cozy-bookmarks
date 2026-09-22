@@ -8,11 +8,14 @@ class _StubProvider(AIProvider):
     def __init__(self, reply=None, error=None):
         self._reply = reply
         self._error = error
+        self.received_messages = []
 
     def complete(self, messages):
+        self.received_messages = messages
         if self._error is not None:
             raise self._error
         return self._reply
+
 
 
 def test_suggest_tags_parses_comma_separated_reply():
@@ -69,3 +72,18 @@ def test_suggest_tags_safely_returns_empty_on_unexpected_error():
     tags = suggest_tags_safely(provider, "https://example.com", None, None)
 
     assert tags == []
+
+
+def test_suggest_tags_includes_existing_tags_in_prompt():
+    provider = _StubProvider(reply="python, dev")
+    tags = suggest_tags(
+        provider,
+        "https://example.com",
+        "Title",
+        "Desc",
+        existing_tags=["python", "homelab", "docker"],
+    )
+    assert tags == ["python", "dev"]
+    system_msg = next(m.content for m in provider.received_messages if m.role == "system")
+    assert "Tag già usati dall'utente: python, homelab, docker" in system_msg
+

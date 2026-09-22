@@ -109,3 +109,18 @@ def test_bookmarks_are_isolated_per_user(client, db_session, user):
 
     delete_response = client.delete(f"/bookmarks/{created['id']}")
     assert delete_response.status_code == 404
+
+
+def test_archive_and_unarchive_bookmark(db_session, user):
+    from app.domain import bookmark as bookmark_domain
+    from app.domain.bookmark import BookmarkStatus
+
+    bm = bookmark_domain.create_bookmark(db_session, user.id, "https://example.com/arch")
+    assert bm.status == BookmarkStatus.DA_ORGANIZZARE
+
+    assert bookmark_domain.archive_bookmark(db_session, user.id, bm.id) is True
+    assert bm.status == BookmarkStatus.ARCHIVIATO
+
+    assert bookmark_domain.unarchive_bookmark(db_session, user.id, bm.id) is True
+    assert bm.status == BookmarkStatus.ORGANIZZATO
+

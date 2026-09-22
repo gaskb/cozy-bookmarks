@@ -28,6 +28,8 @@ POSITION_GAP = 1000.0
 class BookmarkStatus(str, enum.Enum):
     DA_ORGANIZZARE = "da_organizzare"
     ORGANIZZATO = "organizzato"
+    ARCHIVIATO = "archiviato"
+
 
 
 bookmark_tags = Table(
@@ -152,6 +154,7 @@ def list_bookmarks(
             or_(
                 Bookmark.title.ilike(pattern),
                 Bookmark.note.ilike(pattern),
+                Bookmark.description.ilike(pattern),
                 Bookmark.url.ilike(pattern),
                 Bookmark.tags.any(Tag.name.ilike(pattern)),
             )
@@ -296,3 +299,53 @@ def delete_bookmark(db: OrmSession, user_id: int, bookmark_id: int) -> bool:
     db.delete(bookmark)
     db.commit()
     return True
+
+
+def archive_bookmark(db: OrmSession, user_id: int, bookmark_id: int) -> bool:
+    bookmark = get_bookmark(db, user_id, bookmark_id)
+    if bookmark is None:
+        return False
+    bookmark.status = BookmarkStatus.ARCHIVIATO
+    db.commit()
+    return True
+
+
+def unarchive_bookmark(db: OrmSession, user_id: int, bookmark_id: int) -> bool:
+    bookmark = get_bookmark(db, user_id, bookmark_id)
+    if bookmark is None:
+        return False
+    bookmark.status = BookmarkStatus.ORGANIZZATO
+    db.commit()
+    return True
+
+
+def enrich_bookmark_fields(
+    db: OrmSession,
+    user_id: int,
+    bookmark_id: int,
+    title: str | None = None,
+    description: str | None = None,
+    image_url: str | None = None,
+    favicon_url: str | None = None,
+    extra_note: str | None = None,
+    ai_suggested_tags: list[str] | None = None,
+) -> Bookmark | None:
+    bookmark = get_bookmark(db, user_id, bookmark_id)
+    if bookmark is None:
+        return None
+    if title and not bookmark.title:
+        bookmark.title = title
+    if description:
+        bookmark.description = description
+    if image_url:
+        bookmark.image_url = image_url
+    if favicon_url:
+        bookmark.favicon_url = favicon_url
+    if extra_note:
+        bookmark.note = f"{bookmark.note}\n{extra_note}" if bookmark.note else extra_note
+    if ai_suggested_tags:
+        bookmark.ai_suggested_tags = ", ".join(ai_suggested_tags)
+    db.commit()
+    db.refresh(bookmark)
+    return bookmark
+
