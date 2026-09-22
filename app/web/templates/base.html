@@ -22,33 +22,45 @@
   <script src="/static/sortable.min.js" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <a href="/" class="brand">
-      <svg class="brand-mark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg>
-      Cozy Bookmarks
-      <span class="brand-version">({{ app_version }})</span>
-    </a>
-    {% if current_user %}
-    <details class="user-menu">
-      <summary class="user-menu-trigger" aria-label="Menu utente">&#9776;</summary>
-      <div class="user-menu-panel">
-        <p class="user-menu-email">{{ current_user.email }}</p>
+  <header class="site-header-centered">
+    <div class="header-leading">
+      <a href="/" class="brand" title="Home">
+        <svg class="brand-mark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg>
+      </a>
+    </div>
+
+    <div class="header-center">
+      <a href="/" style="text-decoration: none; color: inherit;">
+        <h1 class="app-title">Cozy Bookmarks</h1>
+      </a>
+      <div class="version-badges">
+        <span class="version-badge">v{{ app_version }}</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      {% if current_user %}
+      <details class="user-menu">
+        <summary class="user-menu-trigger" aria-label="Menu utente">&#9776;</summary>
+        <div class="user-menu-panel">
+          <p class="user-menu-email">{{ current_user.email }}</p>
+          <label for="theme-select" class="visually-hidden">Tema</label>
+          <select id="theme-select"></select>
+          <a href="/bookmarks/import">Importa</a>
+          <a href="/bookmarks/export/html" download="cozy-bookmarks.html">Esporta HTML</a>
+          <a href="/bookmarks/export/json" download="cozy-bookmarks.json">Esporta JSON</a>
+          <a href="/tokens">API Token</a>
+          <form method="post" action="/digest/send-test"><button type="submit" class="link-button" onclick="this.textContent='Invio in corso...';">Invia email di prova</button></form>
+          <form method="post" action="/logout"><button type="submit" class="link-button">Esci</button></form>
+        </div>
+      </details>
+      {% else %}
+      <div class="theme-switcher-inline">
         <label for="theme-select" class="visually-hidden">Tema</label>
         <select id="theme-select"></select>
-        <a href="/bookmarks/import">Importa</a>
-        <a href="/bookmarks/export/html" download="cozy-bookmarks.html">Esporta HTML</a>
-        <a href="/bookmarks/export/json" download="cozy-bookmarks.json">Esporta JSON</a>
-        <a href="/tokens">API Token</a>
-        <form method="post" action="/digest/send-test"><button type="submit" class="link-button" onclick="this.textContent='Invio in corso...';">Invia email di prova</button></form>
-        <form method="post" action="/logout"><button type="submit" class="link-button">Esci</button></form>
       </div>
-    </details>
-    {% else %}
-    <div class="theme-switcher-inline">
-      <label for="theme-select" class="visually-hidden">Tema</label>
-      <select id="theme-select"></select>
+      {% endif %}
     </div>
-    {% endif %}
   </header>
   {% block body %}{% endblock %}
   <script>

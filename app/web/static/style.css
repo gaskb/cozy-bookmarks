@@ -119,6 +119,98 @@ a {
   margin-bottom: 1rem;
 }
 
+/* Centered Header Layout Pattern (gaskb_style standard) */
+.site-header-centered {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.site-header-centered .header-leading {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+}
+
+.site-header-centered .header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.site-header-centered .header-center h1,
+.site-header-centered .header-center .app-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-family: "Fraunces", serif;
+  font-weight: 700;
+  color: var(--md-on-background);
+  line-height: 1.2;
+}
+
+.site-header-centered .header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+.version-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.version-badge {
+  font-family: var(--md-font-mono, monospace);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--md-on-surface-variant);
+  background-color: var(--md-surface-variant);
+  border: 1px solid var(--md-outline-variant);
+  padding: 0.12rem 0.45rem;
+  border-radius: var(--md-shape-xs, 4px);
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+
+.version-badge-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  opacity: 0.85;
+}
+
+@media (max-width: 600px) {
+  .site-header-centered {
+    grid-template-columns: auto 1fr auto;
+    gap: 0.5rem;
+  }
+  .site-header-centered .header-center h1,
+  .site-header-centered .header-center .app-title {
+    font-size: 1.15rem;
+  }
+  .version-badges {
+    gap: 0.2rem;
+  }
+  .version-badge {
+    font-size: 0.68rem;
+    padding: 0.08rem 0.35rem;
+  }
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
