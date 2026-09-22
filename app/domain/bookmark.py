@@ -68,6 +68,7 @@ class Bookmark(Base):
         default=BookmarkStatus.DA_ORGANIZZARE,
     )
     created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
+    digest_sent_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
     position: Mapped[float] = mapped_column(Float, nullable=False)
 
     tags: Mapped[list[Tag]] = relationship(secondary=bookmark_tags, order_by="Tag.name")

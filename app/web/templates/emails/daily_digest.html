@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cozy Bookmarks — Il tuo riassunto giornaliero</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #fdfbf7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #2c2724; -webkit-font-smoothing: antialiased;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed; background-color: #fdfbf7;">
+    <tr>
+      <td align="center" style="padding: 24px 12px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border: 1px solid #e8e2d8; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+          <!-- Header -->
+          <tr>
+            <td style="padding: 24px 28px; background-color: #f9f6f0; border-bottom: 1px solid #e8e2d8;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td>
+                    <span style="font-size: 20px; font-weight: 700; color: #b25b38; letter-spacing: -0.5px;">📖 Cozy Bookmarks</span>
+                  </td>
+                  <td align="right">
+                    <span style="font-size: 13px; color: #82786f;">{{ date_str }}</span>
+                  </td>
+                </tr>
+              </table>
+              <h1 style="margin: 16px 0 4px 0; font-size: 22px; font-weight: 600; color: #2c2724;">Il tuo riassunto giornaliero</h1>
+              <p style="margin: 0; font-size: 14px; color: #6e645a;">Ecco i nuovi segnalibri salvati pronti da rivedere e organizzare:</p>
+            </td>
+          </tr>
+
+          <!-- Bookmarks list -->
+          <tr>
+            <td style="padding: 20px 24px;">
+              {% for b in bookmarks %}
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 20px; border: 1px solid #eee7de; border-radius: 8px; background-color: #ffffff; padding: 16px;">
+                <tr>
+                  <td>
+                    <div style="margin-bottom: 6px;">
+                      <a href="{{ b.url }}" target="_blank" rel="noopener noreferrer" style="font-size: 17px; font-weight: 600; color: #b25b38; text-decoration: none; line-height: 1.3;">
+                        {{ b.title or b.url }}
+                      </a>
+                    </div>
+                    <div style="font-size: 12px; color: #8e847a; margin-bottom: 10px; word-break: break-all;">
+                      {{ b.url }}
+                    </div>
+
+                    {% if b.image_url %}
+                    <div style="margin-bottom: 12px;">
+                      <img src="{{ b.image_url }}" alt="Preview" style="max-width: 100%; max-height: 240px; border-radius: 6px; display: block; object-fit: cover;">
+                    </div>
+                    {% endif %}
+
+                    {% if b.description or b.note %}
+                    <p style="margin: 0 0 12px 0; font-size: 14px; line-height: 1.5; color: #4a433c; background-color: #faf7f2; padding: 10px 12px; border-radius: 6px; border-left: 3px solid #d4c8b8;">
+                      {{ b.description or b.note }}
+                    </p>
+                    {% endif %}
+
+                    {% set all_tags = [] %}
+                    {% for t in b.tags %}{% set _ = all_tags.append(t.name) %}{% endfor %}
+                    {% if b.ai_suggested_tags %}
+                      {% for st in b.ai_suggested_tags.split(',') %}
+                        {% if st.strip() and st.strip() not in all_tags %}
+                          {% set _ = all_tags.append(st.strip()) %}
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+
+                    {% if all_tags %}
+                    <div style="margin-bottom: 14px;">
+                      {% for tag in all_tags %}
+                      <span style="display: inline-block; font-size: 11px; background-color: #f0eae1; color: #5c524b; padding: 3px 8px; border-radius: 12px; margin-right: 4px; margin-bottom: 4px;">#{{ tag }}</span>
+                      {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <table border="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="center" style="border-radius: 6px; background-color: #b25b38;">
+                          <a href="{{ base_url }}/bookmarks/{{ b.id }}/organize" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 7px 14px; font-size: 13px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 6px;">
+                            Organizza questo segnalibro &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              {% endfor %}
+            </td>
+          </tr>
+
+          <!-- Footer & Global CTA -->
+          <tr>
+            <td style="padding: 20px 24px; background-color: #f9f6f0; border-top: 1px solid #e8e2d8; text-align: center;">
+              {% if pending_count > 0 %}
+              <p style="margin: 0 0 12px 0; font-size: 14px; color: #554c44;">
+                Hai ancora <strong>{{ pending_count }}</strong> bookmark in attesa di organizzazione.
+              </p>
+              {% endif %}
+              <table border="0" cellpadding="0" cellspacing="0" align="center">
+                <tr>
+                  <td align="center" style="border-radius: 6px; background-color: #2c2724;">
+                    <a href="{{ base_url }}/?status=da_organizzare" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 10px 20px; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 6px;">
+                      Apri la coda Cozy Bookmarks
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin: 20px 0 0 0; font-size: 12px; color: #9c9288;">
+                Inviato con cura da Cozy Bookmarks nel tuo Homelab.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

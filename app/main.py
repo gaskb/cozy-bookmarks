@@ -8,12 +8,14 @@ from app.api.auth import router as auth_router
 from app.api.bookmarks import router as bookmarks_router
 from app.api.health import router as health_router
 from app.api.quick_save import router as quick_save_router
+from app.api.tokens import router as tokens_api_router
 from app.logging_config import configure_logging
 from app.web.auth import router as web_auth_router
 from app.web.bookmarks import router as web_bookmarks_router
 from app.web.deps import NotAuthenticatedRedirect
 from app.web.pwa import router as pwa_router
 from app.web.share_target import router as share_target_router
+from app.web.tokens import router as tokens_web_router
 
 configure_logging()
 
@@ -22,8 +24,10 @@ app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(web_auth_router)
 app.include_router(web_bookmarks_router)
+app.include_router(tokens_web_router)
 app.include_router(bookmarks_router)
 app.include_router(quick_save_router)
+app.include_router(tokens_api_router)
 app.include_router(pwa_router)
 app.include_router(share_target_router)
 

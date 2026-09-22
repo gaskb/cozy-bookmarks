@@ -21,5 +21,16 @@ class Settings(BaseSettings):
 
     ai_tagging_enabled: bool = True
 
+    # SMTP / Daily Digest configuration
+    smtp_enabled: bool = False
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "Cozy Bookmarks <noreply@example.com>"
+    smtp_tls: bool = True
+    smtp_ssl: bool = False
+    base_url: str = "http://bookmarks.example.com"
+
 
 settings = Settings()

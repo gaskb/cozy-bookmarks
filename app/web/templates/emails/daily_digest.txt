@@ -1,0 +1,18 @@
+Cozy Bookmarks — Il tuo riassunto giornaliero ({{ date_str }})
+================================================================
+
+Ecco i nuovi segnalibri salvati pronti da organizzare:
+
+{% for b in bookmarks %}
+----------------------------------------------------------------
+* {{ b.title or b.url }}
+  URL: {{ b.url }}
+  {% if b.description or b.note %}Nota/Descrizione: {{ b.description or b.note }}{% endif %}
+  Organizza: {{ base_url }}/bookmarks/{{ b.id }}/organize
+{% endfor %}
+
+{% if pending_count > 0 %}
+Hai ancora {{ pending_count }} segnalibri in attesa di organizzazione.
+{% endif %}
+
+Apri la coda: {{ base_url }}/?status=da_organizzare

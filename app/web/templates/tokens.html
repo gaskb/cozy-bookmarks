@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}API Token — Cozy Bookmarks{% endblock %}
+{% block body %}
+<header class="app-header">
+  <a href="/" class="back-icon" aria-label="Torna alla lista" title="Torna alla lista">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+  </a>
+  <h1>Personal Access Tokens</h1>
+</header>
+
+<p class="remaining">Genera API token per autorizzare script, scorciatoie iOS/macOS o bot esterni usando l'header <code>Authorization: Bearer &lt;token&gt;</code>.</p>
+
+{% if new_token %}
+<div class="token-alert" style="background: var(--color-surface, #fff); border: 2px solid var(--color-primary, #b25b38); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+  <p style="margin: 0 0 0.5rem 0; font-weight: bold; color: var(--color-primary, #b25b38);">⚠️ Copia subito questo token. Non verrà più mostrato in chiaro!</p>
+  <div style="display: flex; gap: 0.5rem; align-items: center;">
+    <input type="text" id="raw-token-input" value="{{ new_token }}" readonly style="flex: 1; font-family: monospace; font-size: 0.9rem; padding: 0.5rem;" onclick="this.select()">
+    <button type="button" onclick="navigator.clipboard.writeText('{{ new_token }}'); this.textContent='Copiato!'" style="padding: 0.5rem 1rem;">Copia</button>
+  </div>
+</div>
+{% endif %}
+
+{% if error %}
+<p class="error-msg" style="color: #d9383a; margin-bottom: 1rem;">{{ error }}</p>
+{% endif %}
+
+<form method="post" action="/tokens" class="organize-form" style="margin-bottom: 2rem;">
+  <label>Nome token (es. "Scorciatoia iOS", "Script backup")
+    <input type="text" name="name" placeholder="Nome identificativo" required maxlength="100">
+  </label>
+  <button type="submit">Genera nuovo token</button>
+</form>
+
+<h2>I tuoi token</h2>
+{% if tokens %}
+<div class="tokens-table-wrap" style="overflow-x: auto;">
+  <table class="tokens-table" style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+    <thead>
+      <tr style="text-align: left; border-bottom: 1px solid var(--color-border, #ddd);">
+        <th style="padding: 0.5rem;">Nome</th>
+        <th style="padding: 0.5rem;">Prefisso</th>
+        <th style="padding: 0.5rem;">Creato il</th>
+        <th style="padding: 0.5rem;">Ultimo uso</th>
+        <th style="padding: 0.5rem;">Stato</th>
+        <th style="padding: 0.5rem;">Azione</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in tokens %}
+      <tr style="border-bottom: 1px solid var(--color-border, #eee);">
+        <td style="padding: 0.5rem; font-weight: 500;">{{ t.name }}</td>
+        <td style="padding: 0.5rem;"><code>{{ t.token_prefix }}</code></td>
+        <td style="padding: 0.5rem; font-size: 0.85rem;">{{ t.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td style="padding: 0.5rem; font-size: 0.85rem;">{{ t.last_used_at.strftime('%d/%m/%Y %H:%M') if t.last_used_at else 'Mai' }}</td>
+        <td style="padding: 0.5rem;">
+          {% if t.revoked_at %}
+          <span style="color: #888; font-size: 0.85rem;">Revocato</span>
+          {% else %}
+          <span style="color: #2e7d32; font-size: 0.85rem; font-weight: bold;">Attivo</span>
+          {% endif %}
+        </td>
+        <td style="padding: 0.5rem;">
+          {% if not t.revoked_at %}
+          <form method="post" action="/tokens/{{ t.id }}/revoke" onsubmit="return confirm('Sei sicuro di voler revocare questo token?');" style="margin: 0;">
+            <button type="submit" class="btn-archive" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">Revoca</button>
+          </form>
+          {% else %}
+          —
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p style="color: #666; margin-top: 1rem;">Nessun token creato finora.</p>
+{% endif %}
+{% endblock %}

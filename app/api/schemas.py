@@ -64,3 +64,29 @@ class BookmarkOut(BaseModel):
             created_at=bookmark.created_at,
             tags=sorted(tag.name for tag in bookmark.tags),
         )
+
+
+class TokenCreate(BaseModel):
+    name: str
+
+
+class TokenCreatedOut(BaseModel):
+    model_config = {"from_attributes": True}
+
+    id: int
+    name: str
+    token: str
+    token_prefix: str
+    created_at: dt.datetime
+
+
+class TokenOut(BaseModel):
+    model_config = {"from_attributes": True}
+
+    id: int
+    name: str
+    token_prefix: str
+    created_at: dt.datetime
+    last_used_at: dt.datetime | None = None
+    revoked_at: dt.datetime | None = None
+

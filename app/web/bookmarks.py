@@ -1,13 +1,14 @@
 import json
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, Request, UploadFile
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response
 from sqlalchemy.orm import Session as OrmSession
 
 from app.db import get_db
 from app.domain import bookmark as bookmark_domain
 from app.domain.bookmark import BookmarkStatus
 from app.domain.user import User
+from app.integrations.bookmark_export import export_json_data, export_netscape_html
 from app.integrations.bookmark_html_import import parse_netscape_bookmarks
 from app.orchestration.save_bookmark import (
     enrich_bookmark_task,
@@ -297,6 +298,35 @@ def organize_archive(
     bookmark_domain.archive_bookmark(db, current_user.id, bookmark_id)
     return _redirect_to_next_or_list(db, current_user.id, exclude_id=bookmark_id)
 
+
+
+@router.get("/bookmarks/export/html")
+def export_html(
+    current_user: User = Depends(get_current_user_web),
+    db: OrmSession = Depends(get_db),
+) -> Response:
+    bookmarks = bookmark_domain.list_bookmarks(db, current_user.id)
+    content = export_netscape_html(bookmarks)
+    return Response(
+        content=content,
+        media_type="text/html",
+        headers={"Content-Disposition": 'attachment; filename="cozy-bookmarks.html"'},
+    )
+
+
+@router.get("/bookmarks/export/json")
+def export_json(
+    current_user: User = Depends(get_current_user_web),
+    db: OrmSession = Depends(get_db),
+) -> Response:
+    bookmarks = bookmark_domain.list_bookmarks(db, current_user.id)
+    data = export_json_data(bookmarks)
+    content = json.dumps(data, indent=2, ensure_ascii=False)
+    return Response(
+        content=content,
+        media_type="application/json",
+        headers={"Content-Disposition": 'attachment; filename="cozy-bookmarks.json"'},
+    )
 
 
 def _redirect_to_next_or_list(db: OrmSession, user_id: int, exclude_id: int) -> RedirectResponse:
