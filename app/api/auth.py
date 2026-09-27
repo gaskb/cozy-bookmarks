@@ -24,7 +24,7 @@ def login(payload: LoginRequest, response: Response, db: OrmSession = Depends(ge
         session.token,
         httponly=True,
         samesite="lax",
-        secure=settings.env != "development",
+        secure=settings.session_cookie_secure,
         max_age=max_age,
     )
     return user

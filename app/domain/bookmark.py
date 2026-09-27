@@ -13,9 +13,11 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    UniqueConstraint,
     func,
     or_,
 )
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.orm import Session as OrmSession
 
@@ -42,6 +44,9 @@ bookmark_tags = Table(
 
 class Tag(Base):
     __tablename__ = "tags"
+    __table_args__ = (
+        UniqueConstraint("user_id", "name", name="uq_tags_user_id_name"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
@@ -76,12 +81,20 @@ class Bookmark(Base):
 
 def _get_or_create_tags(db: OrmSession, user_id: int, tag_names: list[str]) -> list[Tag]:
     tags = []
-    for name in {name.strip().lower() for name in tag_names if name.strip()}:
+    normalized_names = sorted({name.strip().lower() for name in tag_names if name.strip()})
+    for name in normalized_names:
         tag = db.query(Tag).filter(Tag.user_id == user_id, Tag.name == name).first()
         if tag is None:
-            tag = Tag(user_id=user_id, name=name)
-            db.add(tag)
-        tags.append(tag)
+            try:
+                with db.begin_nested():
+                    new_tag = Tag(user_id=user_id, name=name)
+                    db.add(new_tag)
+                    db.flush()
+                tag = new_tag
+            except IntegrityError:
+                tag = db.query(Tag).filter(Tag.user_id == user_id, Tag.name == name).first()
+        if tag is not None and tag not in tags:
+            tags.append(tag)
     return tags
 
 

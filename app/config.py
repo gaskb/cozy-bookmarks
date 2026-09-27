@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     database_url: str = "sqlite:///./data/cozy_bookmarks.db"
 
+    session_cookie_secure: bool = True
+
     ai_timeout_seconds: float = 30.0
 
     # "claude" for the native Anthropic adapter; anything else uses the OpenAI-compatible slot below

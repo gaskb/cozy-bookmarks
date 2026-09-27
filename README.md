@@ -20,4 +20,15 @@ MVP in sviluppo. Backlog e progressi sono tracciati nelle [issue GitLab](http://
 - **Deploy**: Docker Compose su una VM dell'homelab (pattern: Vikunja/hyphen-check su VM 103 "web-server"), dietro Nginx Proxy Manager su un sottodominio `*.example.com`.
 - **Estrazione contenuto social (sperimentale, post-MVP)**: link citati in caption di post Instagram/TikTok, ed eventualmente trascrizione audio per link menzionati a voce nei video — vedi backlog, entrambe da validare tecnicamente prima di investirci sviluppo serio.
 
+- **Sicurezza e Affidabilità (v0.8.0)**:
+  - **Protezione Anti-SSRF**: verifica rigorosa degli schemi (solo HTTP/HTTPS), risoluzione DNS preliminare e blocco tempestivo di indirizzi IP privati, loopback, intranet/LAN e link-local; validazione manuale dei redirect (max 3 hop).
+  - **Session Hashing**: i token di sessione web sono memorizzati a database unicamente come digest SHA-256 (`token_hash`), garantendo che un leak o dump del database non consenta l'impersonificazione delle sessioni attive.
+  - **Cookie di Sessione**: configurazione esplicita del flag `SESSION_COOKIE_SECURE` (default `true` per HTTPS in produzione).
+  - **Integrità Dati Tag**: vincolo univoco di database `(user_id, name)` sui tag con gestione concorrente sicura in get-or-create per prevenire collisioni e duplicati.
+
 Convenzioni di sviluppo (clean code, commit, backlog) seguite in questo progetto sono documentate nel workspace Notion personale, non duplicate qui.
+
+---
+
+Offrimi un caffè su [Ko-fi](https://ko-fi.com/gaskb)!
+

@@ -5,11 +5,19 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 import app.domain  # noqa: F401 registers all models on Base.metadata
+from app.config import settings
 from app.db import Base, get_db
 from app.domain.user import User, hash_password
 from app.integrations.metadata_extractor import PageMetadata
 from app.main import app as fastapi_app
 from app.orchestration import save_bookmark
+
+
+@pytest.fixture(autouse=True)
+def _testclient_cookie_secure(monkeypatch):
+    # TestClient connects over plain HTTP (http://testserver); browsers and TestClient drop Secure cookies over HTTP
+    monkeypatch.setattr(settings, "session_cookie_secure", False)
+
 
 
 @pytest.fixture(autouse=True)
