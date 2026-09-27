@@ -33,6 +33,12 @@ class BookmarkStatus(str, enum.Enum):
     ARCHIVIATO = "archiviato"
 
 
+class EnrichmentStatus(str, enum.Enum):
+    PENDING = "pending"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
 
 bookmark_tags = Table(
     "bookmark_tags",
@@ -71,6 +77,12 @@ class Bookmark(Base):
         Enum(BookmarkStatus, values_callable=lambda enum_cls: [member.value for member in enum_cls]),
         nullable=False,
         default=BookmarkStatus.DA_ORGANIZZARE,
+    )
+    enrichment_status: Mapped[EnrichmentStatus] = mapped_column(
+        Enum(EnrichmentStatus, values_callable=lambda enum_cls: [member.value for member in enum_cls]),
+        nullable=False,
+        default=EnrichmentStatus.COMPLETED,
+        server_default="completed",
     )
     created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
     digest_sent_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
@@ -119,6 +131,7 @@ def create_bookmark(
     favicon_url: str | None = None,
     tag_names: list[str] | None = None,
     ai_suggested_tags: list[str] | None = None,
+    enrichment_status: EnrichmentStatus = EnrichmentStatus.COMPLETED,
 ) -> Bookmark:
     bookmark = Bookmark(
         user_id=user_id,
@@ -131,11 +144,80 @@ def create_bookmark(
         ai_suggested_tags=", ".join(ai_suggested_tags) if ai_suggested_tags else None,
         tags=_get_or_create_tags(db, user_id, tag_names or []),
         position=_next_position(db, user_id),
+        enrichment_status=enrichment_status,
     )
     db.add(bookmark)
     db.commit()
     db.refresh(bookmark)
     return bookmark
+
+
+def list_pending_or_failed_enrichments(db: OrmSession, limit: int = 100) -> list[Bookmark]:
+    return (
+        db.query(Bookmark)
+        .filter(Bookmark.enrichment_status.in_([EnrichmentStatus.PENDING, EnrichmentStatus.FAILED]))
+        .order_by(Bookmark.created_at.asc())
+        .limit(limit)
+        .all()
+    )
+
+
+def import_bookmarks_batch(
+    db: OrmSession, user_id: int, links: list[tuple[str, str | None]]
+) -> tuple[int, int]:
+    from app.validation import ValidationError, validate_url
+
+    if not links:
+        return 0, 0
+
+    existing_urls = {
+        row[0]
+        for row in db.query(Bookmark.url).filter(Bookmark.user_id == user_id).all()
+    }
+
+    highest_pos_row = (
+        db.query(Bookmark.position)
+        .filter(Bookmark.user_id == user_id)
+        .order_by(Bookmark.position.desc())
+        .first()
+    )
+    current_pos = highest_pos_row[0] if highest_pos_row else 0.0
+
+    imported_count = 0
+    skipped_count = 0
+    new_bookmarks = []
+
+    for raw_url, raw_title in links:
+        try:
+            clean_url = validate_url(raw_url)
+        except ValidationError:
+            skipped_count += 1
+            continue
+
+        if clean_url in existing_urls:
+            skipped_count += 1
+            continue
+
+        existing_urls.add(clean_url)
+        current_pos += POSITION_GAP
+        clean_title = raw_title.strip()[:500] if raw_title else None
+
+        bm = Bookmark(
+            user_id=user_id,
+            url=clean_url,
+            title=clean_title,
+            status=BookmarkStatus.DA_ORGANIZZARE,
+            position=current_pos,
+            enrichment_status=EnrichmentStatus.COMPLETED,
+        )
+        new_bookmarks.append(bm)
+        imported_count += 1
+
+    if new_bookmarks:
+        db.add_all(new_bookmarks)
+        db.commit()
+
+    return imported_count, skipped_count
 
 
 def get_bookmark(db: OrmSession, user_id: int, bookmark_id: int) -> Bookmark | None:

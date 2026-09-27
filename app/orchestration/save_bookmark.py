@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session as OrmSession
 from app.config import settings
 from app.domain.bookmark import (
     Bookmark,
+    EnrichmentStatus,
     create_bookmark,
     list_most_used_tag_names,
     list_tag_names,
@@ -34,6 +35,7 @@ def save_bookmark_fast(
         title=title,
         note=note,
         tag_names=tag_names,
+        enrichment_status=EnrichmentStatus.PENDING,
     )
 
 
@@ -67,6 +69,7 @@ def enrich_bookmark(db: OrmSession, bookmark: Bookmark) -> Bookmark:
     bookmark.description = metadata.description
     bookmark.image_url = metadata.image_url
     bookmark.favicon_url = metadata.favicon_url
+    bookmark.enrichment_status = EnrichmentStatus.COMPLETED
     if suggested_tags:
         bookmark.ai_suggested_tags = ", ".join(suggested_tags)
     db.commit()
@@ -85,6 +88,13 @@ def enrich_bookmark_task(bookmark_id: int, user_id: int) -> None:
             enrich_bookmark(db, bookmark)
     except Exception:
         logger.exception("unexpected error in background enrichment for bookmark %s", bookmark_id)
+        try:
+            failed_bm = get_bookmark(db, user_id, bookmark_id)
+            if failed_bm is not None:
+                failed_bm.enrichment_status = EnrichmentStatus.FAILED
+                db.commit()
+        except Exception:
+            pass
     finally:
         db.close()
 

@@ -11,6 +11,7 @@
 <p class="remaining">Carica il file HTML esportato dal tuo browser (di solito: Impostazioni → Bookmark → Esporta bookmark). I link già salvati vengono saltati automaticamente.</p>
 
 <form method="post" action="/bookmarks/import" enctype="multipart/form-data" class="organize-form">
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
   <label>File
     <input type="file" name="file" accept=".html,text/html" required>
   </label>

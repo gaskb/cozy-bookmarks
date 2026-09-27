@@ -16,8 +16,19 @@ from app.orchestration.save_bookmark import (
     save_bookmark_fast,
     save_bookmark_with_metadata,
 )
+from app.validation import (
+    ValidationError,
+    validate_note,
+    validate_tag_name,
+    validate_title,
+    validate_url,
+)
 from app.web.deps import get_current_user_web
 from app.web.templating import templates
+
+MAX_IMPORT_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
+MAX_IMPORT_BOOKMARKS = 5000
+CHUNK_SIZE = 64 * 1024
 
 router = APIRouter()
 
@@ -78,9 +89,11 @@ def pin_tag_route(
     current_user: User = Depends(get_current_user_web),
     db: OrmSession = Depends(get_db),
 ) -> RedirectResponse:
-    cleaned = name.strip()
-    if cleaned:
+    try:
+        cleaned = validate_tag_name(name)
         bookmark_domain.pin_tag(db, current_user.id, cleaned)
+    except ValidationError:
+        pass
     return RedirectResponse("/", status_code=303)
 
 
@@ -113,22 +126,27 @@ def new_bookmark_submit(
     current_user: User = Depends(get_current_user_web),
     db: OrmSession = Depends(get_db),
 ):
-    cleaned_url = url.strip()
-    if not cleaned_url:
+    try:
+        validated_url = validate_url(url)
+        validated_title = validate_title(title)
+        validated_note = validate_note(note)
+        raw_tags = _parse_tags(tags)
+        validated_tags = [validate_tag_name(t) for t in raw_tags]
+    except ValidationError as exc:
         return templates.TemplateResponse(
             request,
             "new_bookmark.html",
-            {"error": "Inserisci un URL", "current_user": current_user},
+            {"error": str(exc), "current_user": current_user},
             status_code=400,
         )
 
     bookmark = save_bookmark_fast(
         db,
         user_id=current_user.id,
-        url=cleaned_url,
-        title=_normalize(title),
-        note=_normalize(note),
-        tag_names=_parse_tags(tags) or None,
+        url=validated_url,
+        title=validated_title,
+        note=validated_note,
+        tag_names=validated_tags or None,
     )
     background_tasks.add_task(enrich_bookmark_task, bookmark.id, current_user.id)
     return RedirectResponse(f"/bookmarks/{bookmark.id}/organize", status_code=303)
@@ -147,22 +165,46 @@ def import_bookmarks_form(
 
 @router.post("/bookmarks/import")
 async def import_bookmarks_submit(
+    request: Request,
     file: UploadFile,
     current_user: User = Depends(get_current_user_web),
     db: OrmSession = Depends(get_db),
-) -> RedirectResponse:
-    raw = await file.read()
+) -> Response:
+    chunks = []
+    total_size = 0
+    while chunk := await file.read(CHUNK_SIZE):
+        total_size += len(chunk)
+        if total_size > MAX_IMPORT_FILE_SIZE:
+            return templates.TemplateResponse(
+                request,
+                "import_bookmarks.html",
+                {
+                    "error": "Il file caricato supera la dimensione massima consentita di 5 MB",
+                    "current_user": current_user,
+                },
+                status_code=400,
+            )
+        chunks.append(chunk)
+
+    raw = b"".join(chunks)
     content = raw.decode("utf-8", errors="replace")
     links = parse_netscape_bookmarks(content)
 
-    imported_count = 0
-    skipped_count = 0
-    for link in links:
-        if bookmark_domain.find_bookmark_by_url(db, current_user.id, link.url) is not None:
-            skipped_count += 1
-            continue
-        bookmark_domain.create_bookmark(db, user_id=current_user.id, url=link.url, title=link.title)
-        imported_count += 1
+    if len(links) > MAX_IMPORT_BOOKMARKS:
+        return templates.TemplateResponse(
+            request,
+            "import_bookmarks.html",
+            {
+                "error": f"Il file contiene troppi segnalibri (massimo {MAX_IMPORT_BOOKMARKS} per import)",
+                "current_user": current_user,
+            },
+            status_code=400,
+        )
+
+    links_tuples = [(link.url, link.title) for link in links]
+    imported_count, skipped_count = bookmark_domain.import_bookmarks_batch(
+        db, current_user.id, links_tuples
+    )
 
     return RedirectResponse(f"/?imported={imported_count}&skipped={skipped_count}", status_code=303)
 
@@ -269,14 +311,23 @@ def organize_submit(
     current_user: User = Depends(get_current_user_web),
     db: OrmSession = Depends(get_db),
 ):
+    try:
+        clean_title = validate_title(title)
+        clean_note = validate_note(note)
+        clean_tags = [validate_tag_name(t) for t in _parse_tags(tags)]
+    except ValidationError:
+        clean_title = _normalize(title)[:500] if title else None
+        clean_note = _normalize(note)[:10000] if note else None
+        clean_tags = [t.strip().lower()[:50] for t in _parse_tags(tags) if t.strip()]
+
     bookmark = bookmark_domain.update_bookmark(
         db,
         current_user.id,
         bookmark_id,
-        title=_normalize(title),
-        note=_normalize(note),
+        title=clean_title,
+        note=clean_note,
         status=BookmarkStatus.ORGANIZZATO,
-        tag_names=_parse_tags(tags),
+        tag_names=clean_tags,
     )
     if bookmark is None:
         return RedirectResponse("/", status_code=303)

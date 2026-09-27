@@ -61,3 +61,22 @@ def test_import_requires_auth_on_post(client):
 
     assert response.status_code == 303
     assert response.headers["location"] == "/login"
+
+
+def test_import_rejects_file_exceeding_size_limit(authed_client):
+    # Create content larger than 5 MB
+    large_content = "<!-- " + ("X" * (5 * 1024 * 1024 + 100)) + " -->"
+    response = _upload(authed_client, large_content)
+
+    assert response.status_code == 400
+    assert "5 MB" in response.text
+
+
+def test_import_rejects_file_exceeding_bookmark_limit(authed_client):
+    # Create HTML with 5001 links
+    links_html = "".join(f'<DT><A HREF="https://example.com/{i}">Link {i}</A>\n' for i in range(5001))
+    content = f"<!DOCTYPE NETSCAPE-Bookmark-file-1><DL><p>{links_html}</DL><p>"
+    response = _upload(authed_client, content)
+
+    assert response.status_code == 400
+    assert "massimo 5000" in response.text
