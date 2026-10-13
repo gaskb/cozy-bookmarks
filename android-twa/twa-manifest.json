@@ -17,7 +17,7 @@
   "maskableIconUrl": "https://bookmarks.example.com/static/icons/icon-512-maskable.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
-    "path": "./android-twa/android.keystore",
+    "path": "./android.keystore",
     "alias": "android"
   },
   "appVersionName": "1",

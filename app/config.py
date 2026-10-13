@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     smtp_from: str = "Cozy Bookmarks <noreply@example.com>"
     smtp_tls: bool = True
     smtp_ssl: bool = False
-    base_url: str = "http://bookmarks.example.com"
+    base_url: str = "http://localhost:8000"
 
 
 settings = Settings()
